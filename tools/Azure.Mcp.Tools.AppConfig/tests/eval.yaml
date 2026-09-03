@@ -2,7 +2,7 @@ name: Azure App Configuration evaluations
 description: Evaluation prompts for Azure App Configuration
 type: capability
 stimuli:
-  - name: List stores
+  - name: List stores for account
     prompt: List all App Configuration stores in my subscription
     environment: ${ENVIRONMENT}
     tags: 
