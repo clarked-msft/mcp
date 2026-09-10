@@ -2452,6 +2452,8 @@ azmcp optimization recommendation explain --subscription <subscription> \
 
 ### Azure Data Explorer Operations
 
+When the server uses `--cloud custom`, data-plane operations require `kustoEndpointSuffix` and `kustoScope` in the custom-cloud configuration. Cluster URIs must use HTTPS and belong to the configured suffix. See `docs/sovereign-clouds.md` for the complete configuration contract.
+
 ```bash
 # Get details for a Azure Data Explorer cluster
 # ❌ Destructive | ✅ Idempotent | ❌ OpenWorld | ✅ ReadOnly | ❌ Secret | ❌ LocalRequired

@@ -40,4 +40,14 @@ public interface IAzureCloudConfiguration
     /// Gets the Application Insights endpoint for the configured cloud.
     /// </summary>
     Uri ApplicationInsightsEndpoint { get; }
+
+    /// <summary>
+    /// Gets the trusted Kusto endpoint suffix for a custom cloud.
+    /// </summary>
+    string? KustoEndpointSuffix { get; }
+
+    /// <summary>
+    /// Gets the OAuth scope used for Kusto queries in a custom cloud.
+    /// </summary>
+    string? KustoScope { get; }
 }

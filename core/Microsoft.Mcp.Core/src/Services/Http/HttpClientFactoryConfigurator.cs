@@ -38,6 +38,18 @@ public static class HttpClientFactoryConfigurator
         return services;
     }
 
+    public static IHttpClientBuilder DisableAutomaticRedirects(
+        this IHttpClientBuilder builder,
+        Func<Uri?>? recordingProxyResolver = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.ConfigurePrimaryHttpMessageHandler(serviceProvider =>
+            CreateHttpMessageHandler(serviceProvider, recordingProxyResolver, allowAutoRedirect: false));
+
+        return builder;
+    }
+
     private static void ConfigureHttpClientBuilder(IHttpClientBuilder builder, Func<Uri?>? recordingProxyResolver)
     {
         builder.ConfigureHttpClient((serviceProvider, client) =>
@@ -49,13 +61,20 @@ public static class HttpClientFactoryConfigurator
             client.DefaultRequestHeaders.UserAgent.ParseAdd(BuildUserAgent(transport));
         });
 
-        builder.ConfigurePrimaryHttpMessageHandler(serviceProvider => CreateHttpMessageHandler(serviceProvider, recordingProxyResolver));
+        builder.ConfigurePrimaryHttpMessageHandler(serviceProvider =>
+            CreateHttpMessageHandler(serviceProvider, recordingProxyResolver));
     }
 
-    private static HttpMessageHandler CreateHttpMessageHandler(IServiceProvider serviceProvider, Func<Uri?>? recordingProxyResolver)
+    private static HttpMessageHandler CreateHttpMessageHandler(
+        IServiceProvider serviceProvider,
+        Func<Uri?>? recordingProxyResolver,
+        bool allowAutoRedirect = true)
     {
         var options = serviceProvider.GetRequiredService<IOptions<HttpClientOptions>>().Value;
-        var handler = new HttpClientHandler();
+        var handler = new HttpClientHandler
+        {
+            AllowAutoRedirect = allowAutoRedirect
+        };
 
         var proxy = CreateProxy(options);
         if (proxy != null)

@@ -36,7 +36,7 @@ You can configure the cloud environment using one of the following methods. The 
 
 ### Custom cloud
 
-Set `--cloud custom` and provide a local JSON file with the endpoints for the cloud. The file must contain HTTPS values for `authorityHost`, `armEndpoint`, `logAnalyticsEndpoint`, and `applicationInsightsEndpoint`, plus `resourceManagerAudience` and the exact OAuth `logAnalyticsScope` expected by the cloud:
+Set `--cloud custom` and provide a local JSON file with the endpoints for the cloud. The file must contain HTTPS values for `authorityHost`, `armEndpoint`, `logAnalyticsEndpoint`, and `applicationInsightsEndpoint`, plus `resourceManagerAudience` and the exact OAuth `logAnalyticsScope` expected by the cloud. To enable Azure Data Explorer data-plane operations, also provide the optional `kustoEndpointSuffix` and `kustoScope` pair:
 
 ```json
 {
@@ -45,7 +45,9 @@ Set `--cloud custom` and provide a local JSON file with the endpoints for the cl
   "resourceManagerAudience": "https://management.contoso.example/",
   "logAnalyticsEndpoint": "https://logs.contoso.example",
   "logAnalyticsScope": "https://logs.contoso.example/.default",
-  "applicationInsightsEndpoint": "https://insights.contoso.example"
+  "applicationInsightsEndpoint": "https://insights.contoso.example",
+  "kustoEndpointSuffix": ".kusto.contoso.example",
+  "kustoScope": "https://kusto.contoso.example/.default"
 }
 ```
 
@@ -55,7 +57,11 @@ Start the server with:
 azmcp server start --cloud custom --custom-cloud-config ./custom-cloud.json
 ```
 
-Custom ARM and Resource Graph operations use the configured ARM endpoint and audience. Log Analytics queries use the configured endpoint and scope through the Log Analytics Query REST API. Application Insights Profiler and other tools that require additional service-specific cloud mappings are not available in custom mode yet.
+Custom ARM and Resource Graph operations use the configured ARM endpoint and audience. Log Analytics queries use the configured endpoint and scope through the Log Analytics Query REST API.
+
+Azure Data Explorer operations that contact a cluster require both Kusto properties. `kustoEndpointSuffix` must be a dedicated DNS suffix such as `.kusto.contoso.example`; only HTTPS cluster hosts beneath that suffix are trusted. `kustoScope` must be the complete HTTPS OAuth scope ending in `/.default`. In custom-cloud mode this suffix replaces the built-in Azure Kusto trust list, and automatic redirects are disabled for Kusto requests. Omitting both properties leaves management-plane cluster list/get operations available, but Kusto database, table, sample, schema, and query operations return a configuration error.
+
+Application Insights Profiler and other tools that require additional service-specific cloud mappings are not available in custom mode yet.
 
 > **Note:** IConfiguration in .NET includes multiple providers in order: `appsettings.json`, `appsettings.{Environment}.json`, user secrets (development), environment variables, and command line arguments. This means environment variables set via `AZURE_CLOUD` will be found at priority 2 through the IConfiguration system before the direct fallback at priority 6.
 

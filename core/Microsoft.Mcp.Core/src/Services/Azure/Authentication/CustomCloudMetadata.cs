@@ -19,4 +19,8 @@ public sealed class CustomCloudMetadata
     public string? LogAnalyticsScope { get; set; }
 
     public string? ApplicationInsightsEndpoint { get; set; }
+
+    public string? KustoEndpointSuffix { get; set; }
+
+    public string? KustoScope { get; set; }
 }

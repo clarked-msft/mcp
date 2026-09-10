@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Azure.ResourceManager;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Mcp.Core.Areas.Server;
@@ -393,7 +394,9 @@ public class AzureCloudConfigurationTests
                   "resourceManagerAudience": "https://management.custom.example/",
                   "logAnalyticsEndpoint": "https://logs.custom.example",
                   "logAnalyticsScope": "https://logs.custom.example/.default",
-                  "applicationInsightsEndpoint": "https://insights.custom.example"
+                  "applicationInsightsEndpoint": "https://insights.custom.example",
+                  "kustoEndpointSuffix": "KUSTO.CONTOSO.EXAMPLE",
+                  "kustoScope": "https://kusto.contoso.example/.default"
                 }
                 """);
             var config = new ConfigurationBuilder()
@@ -407,6 +410,8 @@ public class AzureCloudConfigurationTests
             Assert.Equal(new Uri("https://management.custom.example"), cloudConfig.ArmEnvironment.Endpoint);
             Assert.Equal(new Uri("https://logs.custom.example"), cloudConfig.LogAnalyticsEndpoint);
             Assert.Equal("https://logs.custom.example/.default", cloudConfig.LogAnalyticsScope);
+            Assert.Equal(".kusto.contoso.example", cloudConfig.KustoEndpointSuffix);
+            Assert.Equal("https://kusto.contoso.example/.default", cloudConfig.KustoScope);
         }
         finally
         {
@@ -452,5 +457,131 @@ public class AzureCloudConfigurationTests
         {
             File.Delete(path);
         }
+    }
+
+    [Fact]
+    public void ParseCloudValue_CustomCloudWithoutKustoMetadata_LoadsOtherServices()
+    {
+        var path = WriteCustomCloudConfig();
+        try
+        {
+            var cloudConfig = CreateCustomCloudConfiguration(path);
+
+            Assert.Null(cloudConfig.KustoEndpointSuffix);
+            Assert.Null(cloudConfig.KustoScope);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Theory]
+    [InlineData("kusto.contoso.example", null, "kustoScope")]
+    [InlineData(null, "https://kusto.contoso.example/.default", "kustoEndpointSuffix")]
+    public void ParseCloudValue_CustomCloudWithIncompleteKustoMetadata_ThrowsArgumentException(
+        string? kustoEndpointSuffix,
+        string? kustoScope,
+        string expectedProperty)
+    {
+        var path = WriteCustomCloudConfig(kustoEndpointSuffix, kustoScope);
+        try
+        {
+            var exception = Assert.Throws<ArgumentException>(() => CreateCustomCloudConfiguration(path));
+
+            Assert.Contains(expectedProperty, exception.Message);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("*.kusto.contoso.example")]
+    [InlineData("https://kusto.contoso.example")]
+    [InlineData(".example")]
+    [InlineData(".kusto.contoso.example.")]
+    [InlineData(".kusto.contoso.example/path")]
+    [InlineData(".kusto.contoso.example:443")]
+    [InlineData(".kusto.contoso.exämple")]
+    public void ParseCloudValue_CustomCloudWithInvalidKustoEndpointSuffix_ThrowsArgumentException(string suffix)
+    {
+        var path = WriteCustomCloudConfig(suffix, "https://kusto.contoso.example/.default");
+        try
+        {
+            var exception = Assert.Throws<ArgumentException>(() => CreateCustomCloudConfiguration(path));
+
+            Assert.Contains("kustoEndpointSuffix", exception.Message);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("http://kusto.contoso.example/.default")]
+    [InlineData("https://kusto.contoso.example")]
+    [InlineData("https://user@kusto.contoso.example/.default")]
+    [InlineData("https://kusto.contoso.example:443/.default")]
+    [InlineData("https://kusto.contoso.example/.default?query=value")]
+    [InlineData("https://kusto.contoso.example/.default#fragment")]
+    public void ParseCloudValue_CustomCloudWithInvalidKustoScope_ThrowsArgumentException(string scope)
+    {
+        var path = WriteCustomCloudConfig("kusto.contoso.example", scope);
+        try
+        {
+            var exception = Assert.Throws<ArgumentException>(() => CreateCustomCloudConfiguration(path));
+
+            Assert.Contains("kustoScope", exception.Message);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    private static AzureCloudConfiguration CreateCustomCloudConfiguration(string path)
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["cloud"] = "custom" })
+            .Build();
+        var options = Microsoft.Extensions.Options.Options.Create(new ServerRuntimeConfiguration { CustomCloudConfig = path });
+
+        return new AzureCloudConfiguration(config, options);
+    }
+
+    private static string WriteCustomCloudConfig(
+        string? kustoEndpointSuffix = null,
+        string? kustoScope = null)
+    {
+        var metadata = new Dictionary<string, object?>
+        {
+            ["authorityHost"] = "https://login.custom.example",
+            ["armEndpoint"] = "https://management.custom.example",
+            ["resourceManagerAudience"] = "https://management.custom.example/",
+            ["logAnalyticsEndpoint"] = "https://logs.custom.example",
+            ["logAnalyticsScope"] = "https://logs.custom.example/.default",
+            ["applicationInsightsEndpoint"] = "https://insights.custom.example"
+        };
+
+        if (kustoEndpointSuffix != null)
+        {
+            metadata["kustoEndpointSuffix"] = kustoEndpointSuffix;
+        }
+
+        if (kustoScope != null)
+        {
+            metadata["kustoScope"] = kustoScope;
+        }
+
+        var path = Path.GetTempFileName();
+        File.WriteAllText(path, JsonSerializer.Serialize(metadata));
+        return path;
     }
 }

@@ -50,7 +50,7 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
             ?? configuration["CUSTOM_CLOUD_CONFIG"]
             ?? Environment.GetEnvironmentVariable("CUSTOM_CLOUD_CONFIG");
 
-        (AuthorityHost, ArmEnvironment, CloudType, LogAnalyticsEndpoint, LogAnalyticsScope, ApplicationInsightsEndpoint) =
+        (AuthorityHost, ArmEnvironment, CloudType, LogAnalyticsEndpoint, LogAnalyticsScope, ApplicationInsightsEndpoint, KustoEndpointSuffix, KustoScope) =
             ParseCloudValue(cloudValue, customCloudConfig);
 
         logger?.LogDebug(
@@ -75,7 +75,11 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
 
     public Uri ApplicationInsightsEndpoint { get; }
 
-    private static (Uri authorityHost, ArmEnvironment armEnvironment, AzureCloud cloudType, Uri logAnalyticsEndpoint, string logAnalyticsScope, Uri applicationInsightsEndpoint) ParseCloudValue(
+    public string? KustoEndpointSuffix { get; }
+
+    public string? KustoScope { get; }
+
+    private static (Uri authorityHost, ArmEnvironment armEnvironment, AzureCloud cloudType, Uri logAnalyticsEndpoint, string logAnalyticsScope, Uri applicationInsightsEndpoint, string? kustoEndpointSuffix, string? kustoScope) ParseCloudValue(
         string? cloudValue,
         string? customCloudConfig)
     {
@@ -100,15 +104,15 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
         };
     }
 
-    private static (Uri, ArmEnvironment, AzureCloud, Uri, string, Uri) CreateBuiltIn(
+    private static (Uri, ArmEnvironment, AzureCloud, Uri, string, Uri, string?, string?) CreateBuiltIn(
         Uri authorityHost,
         ArmEnvironment armEnvironment,
         AzureCloud cloudType,
         string logAnalyticsEndpoint,
         string applicationInsightsEndpoint) =>
-        (authorityHost, armEnvironment, cloudType, new Uri(logAnalyticsEndpoint), $"{new Uri(logAnalyticsEndpoint).AbsoluteUri.TrimEnd('/')}/.default", new Uri(applicationInsightsEndpoint));
+        (authorityHost, armEnvironment, cloudType, new Uri(logAnalyticsEndpoint), $"{new Uri(logAnalyticsEndpoint).AbsoluteUri.TrimEnd('/')}/.default", new Uri(applicationInsightsEndpoint), null, null);
 
-    private static (Uri, ArmEnvironment, AzureCloud, Uri, string, Uri) LoadCustomCloud(string? path)
+    private static (Uri, ArmEnvironment, AzureCloud, Uri, string, Uri, string?, string?) LoadCustomCloud(string? path)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -134,7 +138,96 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
             throw new ArgumentException("Custom cloud metadata must specify logAnalyticsScope.", nameof(path));
         }
 
-        return (authorityHost, new ArmEnvironment(armEndpoint, metadata.ResourceManagerAudience), AzureCloud.CustomCloud, logAnalyticsEndpoint, metadata.LogAnalyticsScope, applicationInsightsEndpoint);
+        var (kustoEndpointSuffix, kustoScope) = ParseKustoMetadata(metadata);
+
+        return (authorityHost, new ArmEnvironment(armEndpoint, metadata.ResourceManagerAudience), AzureCloud.CustomCloud, logAnalyticsEndpoint, metadata.LogAnalyticsScope, applicationInsightsEndpoint, kustoEndpointSuffix, kustoScope);
+    }
+
+    private static (string? endpointSuffix, string? scope) ParseKustoMetadata(CustomCloudMetadata metadata)
+    {
+        if (metadata.KustoEndpointSuffix == null && metadata.KustoScope == null)
+        {
+            return (null, null);
+        }
+
+        if (string.IsNullOrWhiteSpace(metadata.KustoEndpointSuffix))
+        {
+            throw new ArgumentException("Custom cloud metadata must specify kustoEndpointSuffix when kustoScope is configured.", nameof(metadata.KustoEndpointSuffix));
+        }
+
+        if (string.IsNullOrWhiteSpace(metadata.KustoScope))
+        {
+            throw new ArgumentException("Custom cloud metadata must specify kustoScope when kustoEndpointSuffix is configured.", nameof(metadata.KustoScope));
+        }
+
+        return (NormalizeKustoEndpointSuffix(metadata.KustoEndpointSuffix), ValidateKustoScope(metadata.KustoScope));
+    }
+
+    private static string NormalizeKustoEndpointSuffix(string value)
+    {
+        if (!value.Equals(value.Trim(), StringComparison.Ordinal) ||
+            value.Any(c => c > 127) ||
+            value.Contains("*", StringComparison.Ordinal) ||
+            value.Contains("%", StringComparison.Ordinal) ||
+            value.Contains("/", StringComparison.Ordinal) ||
+            value.Contains("\\", StringComparison.Ordinal) ||
+            value.Contains(":", StringComparison.Ordinal) ||
+            value.Contains("@", StringComparison.Ordinal) ||
+            value.Contains("?", StringComparison.Ordinal) ||
+            value.Contains("#", StringComparison.Ordinal) ||
+            value.EndsWith(".", StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Custom cloud metadata property 'kustoEndpointSuffix' must be a DNS suffix.", nameof(value));
+        }
+
+        var host = value.TrimStart('.');
+        if (Uri.CheckHostName(host) != UriHostNameType.Dns || host.Split('.').Length < 2)
+        {
+            throw new ArgumentException("Custom cloud metadata property 'kustoEndpointSuffix' must be a multi-label DNS suffix.", nameof(value));
+        }
+
+        foreach (var label in host.Split('.'))
+        {
+            if (label.Length is 0 or > 63 ||
+                !char.IsLetterOrDigit(label[0]) ||
+                !char.IsLetterOrDigit(label[^1]) ||
+                label.Any(c => !char.IsLetterOrDigit(c) && c != '-'))
+            {
+                throw new ArgumentException("Custom cloud metadata property 'kustoEndpointSuffix' contains an invalid DNS label.", nameof(value));
+            }
+        }
+
+        return $".{host.ToLowerInvariant()}";
+    }
+
+    private static string ValidateKustoScope(string value)
+    {
+        if (!value.Equals(value.Trim(), StringComparison.Ordinal) ||
+            value.Any(c => c > 127) ||
+            value.Contains("%", StringComparison.Ordinal) ||
+            !Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+            uri.Scheme != Uri.UriSchemeHttps ||
+            Uri.CheckHostName(uri.Host) != UriHostNameType.Dns ||
+            !string.IsNullOrEmpty(uri.UserInfo) ||
+            !string.IsNullOrEmpty(uri.Query) ||
+            !string.IsNullOrEmpty(uri.Fragment) ||
+            HasExplicitPort(value) ||
+            !uri.AbsolutePath.EndsWith("/.default", StringComparison.Ordinal) ||
+            uri.AbsolutePath.Contains("/../", StringComparison.Ordinal) ||
+            uri.AbsolutePath.Contains("/./", StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Custom cloud metadata property 'kustoScope' must be a canonical absolute HTTPS scope ending in '/.default'.", nameof(value));
+        }
+
+        return value;
+    }
+
+    private static bool HasExplicitPort(string value)
+    {
+        var authorityStart = Uri.UriSchemeHttps.Length + Uri.SchemeDelimiter.Length;
+        var authorityEnd = value.IndexOf('/', authorityStart);
+        var authority = authorityEnd < 0 ? value[authorityStart..] : value[authorityStart..authorityEnd];
+        return authority.Contains(":", StringComparison.Ordinal);
     }
 
     private static Uri ParseHttpsUri(string? value, string propertyName)

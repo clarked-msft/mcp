@@ -529,6 +529,7 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | kusto_database_list | List all databases in the Data Explorer cluster <cluster_name> | none |
 | kusto_database_list | Show me the databases in the Data Explorer cluster <cluster_name> | none |
 | kusto_query | Show me all items that contain the word <search_term> in the Data Explorer table <table_name> in cluster <cluster_name> | none |
+| kusto_query | Query <database_name> in the Data Explorer cluster at <cluster_uri> using <kql_query> | none |
 | kusto_sample | Show me a data sample from the Data Explorer table <table_name> in cluster <cluster_name> | none |
 | kusto_table_list | List all tables in the Data Explorer database <database_name> in cluster <cluster_name> | none |
 | kusto_table_list | Show me the tables in the Data Explorer database <database_name> in cluster <cluster_name> | none |
