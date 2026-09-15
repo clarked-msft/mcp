@@ -745,6 +745,54 @@ public class ConsolidatedModeTests
     }
 
     [Fact]
+    public async Task ConsolidatedMode_HttpTransport_WithLegacyProtocol_Should_Advertise_Legacy_Version()
+    {
+        var exeName = OperatingSystem.IsWindows() ? "azmcp.exe" : "azmcp";
+        var azmcpPath = Path.Combine(AppContext.BaseDirectory, exeName);
+
+        Assert.True(File.Exists(azmcpPath), $"Executable not found at {azmcpPath}.");
+
+        var port = GetAvailablePort();
+        var processStartInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = azmcpPath,
+            Arguments = "server start --mode consolidated --transport http --dangerously-disable-http-incoming-auth --legacy-mcp-protocol",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        processStartInfo.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
+
+        using var process = System.Diagnostics.Process.Start(processStartInfo);
+        Assert.NotNull(process);
+
+        try
+        {
+            using var client = new HttpClient();
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"http://127.0.0.1:{port}/")
+            {
+                Content = new StringContent(
+                    "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-11-25\",\"capabilities\":{},\"clientInfo\":{\"name\":\"foundry\",\"version\":\"1.0\"}}}",
+                    System.Text.Encoding.UTF8,
+                    "application/json")
+            };
+            request.Headers.TryAddWithoutValidation("Accept", "application/json, text/event-stream");
+
+            var response = await SendWithRetryAsync(client, request, TestContext.Current.CancellationToken);
+            var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+            response.EnsureSuccessStatusCode();
+            Assert.Contains("\"protocolVersion\":\"2025-11-25\"", content, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+        }
+    }
+
+    [Fact]
     public async Task ConsolidatedMode_HttpTransport_Should_Reject_Request_Without_Accept_Header()
     {
         var exeName = OperatingSystem.IsWindows() ? "azmcp.exe" : "azmcp";

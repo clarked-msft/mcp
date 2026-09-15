@@ -30,6 +30,8 @@ using Options = Microsoft.Extensions.Options.Options;
 /// </summary>
 public static partial class ServiceCollectionExtensions
 {
+    private const string LegacyMcpProtocolVersion = "2025-11-25";
+
     [GeneratedRegex("^[A-Za-z0-9_-]+$")]
     private static partial Regex ShortNamePattern();
 
@@ -232,6 +234,11 @@ public static partial class ServiceCollectionExtensions
                     CallToolHandler = mcpRuntime.CallToolHandler,
                     ListToolsHandler = mcpRuntime.ListToolsHandler,
                 };
+
+                if (serverStartOptions.LegacyMcpProtocol)
+                {
+                    mcpServerOptions.ProtocolVersion = LegacyMcpProtocolVersion;
+                }
 
                 // Add instructions for the server
                 mcpServerOptions.ServerInstructions = serverInstructionsProvider.GetServerInstructions();

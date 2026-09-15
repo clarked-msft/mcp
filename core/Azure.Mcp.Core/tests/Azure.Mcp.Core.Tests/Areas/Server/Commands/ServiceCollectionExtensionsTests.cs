@@ -205,6 +205,26 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void AddAzureMcpServer_WithLegacyMcpProtocol_ConfiguresLegacyProtocolVersion()
+    {
+        var services = SetupBaseServices();
+        var options = new ServerStartOptions
+        {
+            Transport = TransportTypes.Http,
+            LegacyMcpProtocol = true,
+        };
+
+        services.AddSingleton<IServerInstructionsProvider, NullServerInstructionsProvider>();
+
+        services.AddAzureMcpServer(options);
+
+        var provider = services.BuildServiceProvider();
+        var mcpServerOptions = provider.GetRequiredService<IOptions<McpServerOptions>>().Value;
+
+        Assert.Equal("2025-11-25", mcpServerOptions.ProtocolVersion);
+    }
+
+    [Fact]
     public void AddAzureMcpServer_RegistersOptionsWithSameInstance()
     {
         // Arrange

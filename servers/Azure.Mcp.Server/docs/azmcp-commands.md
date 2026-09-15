@@ -265,6 +265,15 @@ The `azmcp server start` command supports the following options:
 | `--disable-caching` | No | `false` | Disable caching of resource responses, requiring repeated requests to fetch fresh data each time. |
 | `--structured-output-mode` | No | Disabled | Enables `outputSchema` and `structuredContent` in `all`, `namespace`, `consolidated`, and `single` modes. `duplicated` retains the complete original `content`; `compact` returns concise `content`. Both return the complete structured result. Enable this only when the client supports these fields. |
 | `--disable-proxy-tools` | No | `false` | Disable tools that are proxied from sources configured in `/Resources/registry.json`. |
+| `--legacy-mcp-protocol` | No | `false` | Use the MCP `2025-11-25` protocol instead of the `2026-07-28` stateless protocol for clients that do not support MCP routing headers. |
+
+> **MCP client compatibility:**
+>
+> Use `--legacy-mcp-protocol` when an HTTP MCP client does not support the `Mcp-Method` and `Mcp-Name` routing headers required by the `2026-07-28` protocol. This option pins the server to MCP `2025-11-25`; omit it for the default stateless protocol.
+>
+> ```bash
+> azmcp server start --transport http --legacy-mcp-protocol
+> ```
 
 > **⚠️ Security Warning for `--dangerously-disable-elicitation`:**
 >

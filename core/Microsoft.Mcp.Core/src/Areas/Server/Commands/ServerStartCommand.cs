@@ -552,7 +552,10 @@ public sealed class ServerStartCommand : BaseCommand<ServerStartOptions, string>
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.Use(ValidateMcpRoutingHeadersMiddleware);
+        if (!serverOptions.LegacyMcpProtocol)
+        {
+            app.Use(ValidateMcpRoutingHeadersMiddleware);
+        }
 
         IEndpointConventionBuilder mcpEndpointBuilder = app.MapMcp();
         // All MCP endpoints require MCP.All scope or role
@@ -611,7 +614,10 @@ public sealed class ServerStartCommand : BaseCommand<ServerStartOptions, string>
         // Configure middleware pipeline
         app.UseCors("McpCorsPolicy");
         app.UseRouting();
-        app.Use(ValidateMcpRoutingHeadersMiddleware);
+        if (!serverOptions.LegacyMcpProtocol)
+        {
+            app.Use(ValidateMcpRoutingHeadersMiddleware);
+        }
         app.MapMcp();
 
         return app;

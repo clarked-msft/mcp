@@ -127,4 +127,10 @@ public sealed class ServerStartOptions
     /// </summary>
     [Option(Description = "Disable tools that are proxied from external sources configured by the server's /Resources/registry.json.", DefaultValue = false)]
     public bool DisableProxyTools { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets whether the server should use the legacy MCP protocol.
+    /// </summary>
+    [Option(Description = "Use the MCP 2025-11-25 protocol instead of the 2026-07-28 stateless protocol for clients that do not support MCP routing headers.", DefaultValue = false)]
+    public bool LegacyMcpProtocol { get; set; } = false;
 }
