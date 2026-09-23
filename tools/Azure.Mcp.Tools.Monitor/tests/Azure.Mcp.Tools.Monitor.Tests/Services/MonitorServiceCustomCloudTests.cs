@@ -68,15 +68,18 @@ public sealed class MonitorServiceCustomCloudTests
             cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(
-            $"https://logs.contoso.example/v1{ResourceId}/query?timespan=PT6H",
+            $"https://logs.contoso.example/v1{ResourceId}/query",
             requestUri!.AbsoluteUri);
         Assert.Equal("Bearer test-token", authorization);
         Assert.NotNull(requestBody);
         Assert.Contains("\"query\":\"TestTable | project TimeGenerated, Count, Active\\n| limit 5\"", requestBody);
+        Assert.Contains("\"timespan\":\"PT6H\"", requestBody);
         var result = Assert.Single(results);
-        Assert.Equal("2026-09-08T12:00:00Z", result["TimeGenerated"]!.GetValue<string>());
-        Assert.Equal(3, result["Count"]!.GetValue<int>());
-        Assert.True(result["Active"]!.GetValue<bool>());
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-09-08T12:00:00Z"),
+            DateTimeOffset.Parse(result["TimeGenerated"]!.GetValue<string>()));
+        Assert.Equal("3", result["Count"]!.GetValue<string>());
+        Assert.Equal("True", result["Active"]!.GetValue<string>());
         await azureService.Received(1).ResolveTenantIdAsync(Tenant, Arg.Any<CancellationToken>());
         await azureService.Received(1).GetTokenCredentialAsync(ResolvedTenant, Arg.Any<CancellationToken>());
         await credential.Received(1).GetTokenAsync(
