@@ -76,8 +76,10 @@ public sealed class KustoClientTests
         var secondCredential = CreateCredential("second-token");
         var cloudConfiguration = Substitute.For<IAzureCloudConfiguration>();
         cloudConfiguration.CloudType.Returns(AzureCloudConfiguration.AzureCloud.CustomCloud);
-        cloudConfiguration.KustoEndpointSuffix.Returns(".kusto.windows.net");
-        cloudConfiguration.KustoScope.Returns(scope);
+        cloudConfiguration.Kusto.Returns(
+            new KustoCloudConfiguration(
+                ".kusto.windows.net",
+                "https://custom-kusto.contoso.example"));
         azureService.CloudConfiguration.Returns(cloudConfiguration);
         azureService.ResolveTenantIdAsync(tenant, Arg.Any<CancellationToken>()).Returns(resolvedTenant);
         azureService.GetTokenCredentialAsync(resolvedTenant, Arg.Any<CancellationToken>())

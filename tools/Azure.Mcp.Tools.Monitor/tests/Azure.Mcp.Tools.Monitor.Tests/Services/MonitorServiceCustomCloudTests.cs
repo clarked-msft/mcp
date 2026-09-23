@@ -20,7 +20,7 @@ public sealed class MonitorServiceCustomCloudTests
     private const string ResourceId = $"/subscriptions/{Subscription}/resourceGroups/test-rg/providers/Microsoft.Storage/storageAccounts/testaccount";
     private const string Tenant = "test-tenant";
     private const string ResolvedTenant = "00000000-0000-0000-0000-000000000002";
-    private const string LogAnalyticsScope = "https://logs.contoso.example/.default";
+    private const string LogAnalyticsAudience = "https://logs.contoso.example";
 
     [Fact]
     public async Task QueryResourceLogs_CustomCloud_SendsExpectedRequestAndParsesResponse()
@@ -84,7 +84,8 @@ public sealed class MonitorServiceCustomCloudTests
         await azureService.Received(1).GetTokenCredentialAsync(ResolvedTenant, Arg.Any<CancellationToken>());
         await credential.Received(1).GetTokenAsync(
             Arg.Is<TokenRequestContext>(context =>
-                context.Scopes.Length == 1 && context.Scopes[0] == LogAnalyticsScope),
+                context.Scopes.Length == 1 &&
+                context.Scopes[0] == $"{LogAnalyticsAudience}/.default"),
             Arg.Any<CancellationToken>());
     }
 
@@ -113,13 +114,45 @@ public sealed class MonitorServiceCustomCloudTests
         Assert.Contains("""{"error":"invalid audience"}""", exception.Message);
     }
 
+    [Fact]
+    public async Task QueryResourceLogs_CustomCloudWithoutLogAnalyticsCapability_ThrowsInvalidOperationException()
+    {
+        var cloudConfiguration = Substitute.For<IAzureCloudConfiguration>();
+        cloudConfiguration.CloudType.Returns(AzureCloudConfiguration.AzureCloud.CustomCloud);
+        var azureService = Substitute.For<IAzureService>();
+        azureService.CloudConfiguration.Returns(cloudConfiguration);
+        var service = new MonitorService(
+            azureService,
+            Substitute.For<IResourceResolverService>(),
+            Substitute.For<ILogger<MonitorService>>());
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.QueryResourceLogs(
+                Subscription,
+                ResourceId,
+                "TestTable",
+                "TestTable",
+                hours: 1,
+                limit: null,
+                tenant: Tenant,
+                cancellationToken: TestContext.Current.CancellationToken));
+
+        Assert.Contains("Log Analytics queries are not configured", exception.Message);
+        await azureService.DidNotReceive()
+            .GetTokenCredentialAsync(
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>());
+    }
+
     private static (MonitorService Service, IAzureService AzureService, TokenCredential Credential) CreateService(
         HttpMessageHandler handler)
     {
         var cloudConfiguration = Substitute.For<IAzureCloudConfiguration>();
         cloudConfiguration.CloudType.Returns(AzureCloudConfiguration.AzureCloud.CustomCloud);
-        cloudConfiguration.LogAnalyticsEndpoint.Returns(new Uri("https://logs.contoso.example"));
-        cloudConfiguration.LogAnalyticsScope.Returns(LogAnalyticsScope);
+        cloudConfiguration.LogAnalytics.Returns(
+            new CloudServiceConfiguration(
+                new Uri("https://logs.contoso.example"),
+                LogAnalyticsAudience));
 
         var credential = Substitute.For<TokenCredential>();
         credential.GetTokenAsync(Arg.Any<TokenRequestContext>(), Arg.Any<CancellationToken>())

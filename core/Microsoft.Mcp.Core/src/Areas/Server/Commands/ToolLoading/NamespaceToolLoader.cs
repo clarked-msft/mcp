@@ -13,6 +13,7 @@ using Microsoft.Mcp.Core.Commands;
 using Microsoft.Mcp.Core.Helpers;
 using Microsoft.Mcp.Core.Models;
 using Microsoft.Mcp.Core.Models.Command;
+using Microsoft.Mcp.Core.Services.Azure.Authentication;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -28,10 +29,12 @@ public sealed class NamespaceToolLoader(
     ICommandFactory commandFactory,
     IOptions<ServerRuntimeConfiguration> configuration,
     ILogger<NamespaceToolLoader> logger,
-    bool applyFilter = true) : BaseToolLoader(logger)
+    bool applyFilter = true,
+    IAzureCloudConfiguration? cloudConfiguration = null) : BaseToolLoader(logger)
 {
     private readonly ICommandFactory _commandFactory = commandFactory ?? throw new ArgumentNullException(nameof(commandFactory));
     private readonly IOptions<ServerRuntimeConfiguration> _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    private readonly IAzureCloudConfiguration? _cloudConfiguration = cloudConfiguration;
 
     private readonly Lazy<IReadOnlyList<string>> _availableNamespaces = new(() =>
     {
@@ -119,13 +122,16 @@ public sealed class NamespaceToolLoader(
 
             if (_configuration.Value.ReadOnly && group.AllToolsInGroupMatch(meta => !meta.ReadOnly))
             {
-                // If ReadOnly mode is enabled and all commands in the group are not read-only, skip exposing this namespace as a tool.
                 continue;
             }
 
             if (_configuration.Value.IsHttpMode && group.AllToolsInGroupMatch(meta => meta.LocalRequired))
             {
-                // If HTTP mode is enabled and all commands in the group are local-required, skip exposing this namespace as a tool.
+                continue;
+            }
+
+            if (group.AllToolsInGroupMatch(meta => !IsAvailableInCustomCloud(meta, _cloudConfiguration)))
+            {
                 continue;
             }
 
@@ -356,6 +362,23 @@ public sealed class NamespaceToolLoader(
             }
 
             Activity.Current?.SetTag(TagName.ToolAnnotations, McpHelper.CreateToolAnnotationTelemetry(cmd));
+
+            var customCloudUnavailabilityReason = GetCustomCloudUnavailabilityReason(cmd, _cloudConfiguration);
+            if (customCloudUnavailabilityReason != null)
+            {
+                return new CallToolResult
+                {
+                    Content =
+                    [
+                        new TextContentBlock
+                        {
+                            Text = $"Tool '{namespaceName} {command}' is not available. {customCloudUnavailabilityReason}",
+                        }
+                    ],
+                    IsError = true,
+                    Meta = new([new(McpHelper.ToolIdMetaKey, cmd.Id)])
+                };
+            }
 
             // Enforce read-only mode at execution time
             if (_configuration.Value.ReadOnly && !cmd.Metadata.ReadOnly)
@@ -597,8 +620,7 @@ public sealed class NamespaceToolLoader(
         }
 
         var list = namespaceCommands
-            .Where(kvp => !_configuration.Value.ReadOnly || kvp.Value.Metadata.ReadOnly)
-            .Where(kvp => !_configuration.Value.IsHttpMode || !kvp.Value.Metadata.LocalRequired)
+            .Where(kvp => ShouldKeepBaseCommand(kvp.Value, _configuration.Value, _cloudConfiguration))
             .Select(kvp => CreateToolFromCommand(kvp.Key, kvp.Value))
             .ToList();
 

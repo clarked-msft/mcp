@@ -27,7 +27,8 @@ namespace Azure.Mcp.Tools.Speech.Commands.Stt;
     OpenWorld = false,
     ReadOnly = true,
     Secret = false,
-    LocalRequired = true)]
+    LocalRequired = true,
+    CustomCloudRequirement = CustomCloudRequirement.Unsupported)]
 public sealed class SttRecognizeCommand(ILogger<SttRecognizeCommand> logger, ISpeechService speechService)
     : BaseSpeechCommand<SttRecognizeOptions, SttRecognizeCommand.SttRecognizeCommandResult>()
 {

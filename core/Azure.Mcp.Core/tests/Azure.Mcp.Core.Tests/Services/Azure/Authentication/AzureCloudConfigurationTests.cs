@@ -390,13 +390,18 @@ public class AzureCloudConfigurationTests
             File.WriteAllText(path, """
                 {
                   "authorityHost": "https://login.custom.example",
-                  "armEndpoint": "https://management.custom.example",
-                  "resourceManagerAudience": "https://management.custom.example/",
-                  "logAnalyticsEndpoint": "https://logs.custom.example",
-                  "logAnalyticsScope": "https://logs.custom.example/.default",
-                  "applicationInsightsEndpoint": "https://insights.custom.example",
-                  "kustoEndpointSuffix": "KUSTO.CONTOSO.EXAMPLE",
-                  "kustoScope": "https://kusto.contoso.example/.default"
+                  "arm": {
+                    "endpoint": "https://management.custom.example",
+                    "audience": "https://management.custom.example"
+                  },
+                  "logAnalytics": {
+                    "endpoint": "https://logs.custom.example",
+                    "audience": "https://logs.custom.example"
+                  },
+                  "kusto": {
+                    "endpointSuffix": "KUSTO.CONTOSO.EXAMPLE",
+                    "audience": "https://kusto.contoso.example"
+                  }
                 }
                 """);
             var config = new ConfigurationBuilder()
@@ -408,10 +413,12 @@ public class AzureCloudConfigurationTests
 
             Assert.Equal(AzureCloudConfiguration.AzureCloud.CustomCloud, cloudConfig.CloudType);
             Assert.Equal(new Uri("https://management.custom.example"), cloudConfig.ArmEnvironment.Endpoint);
-            Assert.Equal(new Uri("https://logs.custom.example"), cloudConfig.LogAnalyticsEndpoint);
-            Assert.Equal("https://logs.custom.example/.default", cloudConfig.LogAnalyticsScope);
-            Assert.Equal(".kusto.contoso.example", cloudConfig.KustoEndpointSuffix);
-            Assert.Equal("https://kusto.contoso.example/.default", cloudConfig.KustoScope);
+            Assert.Equal(new Uri("https://logs.custom.example"), cloudConfig.LogAnalytics!.Endpoint);
+            Assert.Equal("https://logs.custom.example", cloudConfig.LogAnalytics.Audience);
+            Assert.Equal("https://logs.custom.example/.default", cloudConfig.LogAnalytics.DefaultScope);
+            Assert.Equal(".kusto.contoso.example", cloudConfig.Kusto!.EndpointSuffix);
+            Assert.Equal("https://kusto.contoso.example", cloudConfig.Kusto.Audience);
+            Assert.Equal("https://kusto.contoso.example/.default", cloudConfig.Kusto.DefaultScope);
         }
         finally
         {
@@ -430,28 +437,16 @@ public class AzureCloudConfigurationTests
     }
 
     [Fact]
-    public void ParseCloudValue_CustomCloudWithoutLogAnalyticsScope_ThrowsArgumentException()
+    public void ParseCloudValue_CustomCloudWithOnlyArm_LoadsArmCapability()
     {
-        var path = Path.GetTempFileName();
+        var path = WriteCustomCloudConfig();
         try
         {
-            File.WriteAllText(path, """
-                {
-                  "authorityHost": "https://login.custom.example",
-                  "armEndpoint": "https://management.custom.example",
-                  "resourceManagerAudience": "https://management.custom.example/",
-                  "logAnalyticsEndpoint": "https://logs.custom.example",
-                  "applicationInsightsEndpoint": "https://insights.custom.example"
-                }
-                """);
-            var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?> { ["cloud"] = "custom" })
-                .Build();
-            var options = Microsoft.Extensions.Options.Options.Create(new ServerRuntimeConfiguration { CustomCloudConfig = path });
+            var cloudConfig = CreateCustomCloudConfiguration(path);
 
-            var exception = Assert.Throws<ArgumentException>(() => new AzureCloudConfiguration(config, options));
-
-            Assert.Contains("logAnalyticsScope", exception.Message);
+            Assert.Equal(new Uri("https://management.custom.example"), cloudConfig.ArmEnvironment.Endpoint);
+            Assert.Null(cloudConfig.LogAnalytics);
+            Assert.Null(cloudConfig.Kusto);
         }
         finally
         {
@@ -460,15 +455,16 @@ public class AzureCloudConfigurationTests
     }
 
     [Fact]
-    public void ParseCloudValue_CustomCloudWithoutKustoMetadata_LoadsOtherServices()
+    public void ParseCloudValue_CustomCloudWithoutArm_ThrowsArgumentException()
     {
-        var path = WriteCustomCloudConfig();
+        var path = Path.GetTempFileName();
         try
         {
-            var cloudConfig = CreateCustomCloudConfiguration(path);
+            File.WriteAllText(path, """{ "authorityHost": "https://login.custom.example" }""");
 
-            Assert.Null(cloudConfig.KustoEndpointSuffix);
-            Assert.Null(cloudConfig.KustoScope);
+            var exception = Assert.Throws<ArgumentException>(() => CreateCustomCloudConfiguration(path));
+
+            Assert.Contains("arm capability", exception.Message);
         }
         finally
         {
@@ -477,19 +473,19 @@ public class AzureCloudConfigurationTests
     }
 
     [Theory]
-    [InlineData("kusto.contoso.example", null, "kustoScope")]
-    [InlineData(null, "https://kusto.contoso.example/.default", "kustoEndpointSuffix")]
-    public void ParseCloudValue_CustomCloudWithIncompleteKustoMetadata_ThrowsArgumentException(
+    [InlineData("kusto.contoso.example", null, "kusto.audience")]
+    [InlineData(null, "https://kusto.contoso.example", "kusto.endpointSuffix")]
+    public void ParseCloudValue_CustomCloudWithIncompleteKustoCapability_ThrowsArgumentException(
         string? kustoEndpointSuffix,
-        string? kustoScope,
+        string? kustoAudience,
         string expectedProperty)
     {
-        var path = WriteCustomCloudConfig(kustoEndpointSuffix, kustoScope);
+        var path = WriteCustomCloudConfig(kustoEndpointSuffix, kustoAudience);
         try
         {
             var exception = Assert.Throws<ArgumentException>(() => CreateCustomCloudConfiguration(path));
 
-            Assert.Contains(expectedProperty, exception.Message);
+            Assert.Contains(expectedProperty, exception.Message, StringComparison.OrdinalIgnoreCase);
         }
         finally
         {
@@ -509,12 +505,12 @@ public class AzureCloudConfigurationTests
     [InlineData(".kusto.contoso.exämple")]
     public void ParseCloudValue_CustomCloudWithInvalidKustoEndpointSuffix_ThrowsArgumentException(string suffix)
     {
-        var path = WriteCustomCloudConfig(suffix, "https://kusto.contoso.example/.default");
+        var path = WriteCustomCloudConfig(suffix, "https://kusto.contoso.example");
         try
         {
             var exception = Assert.Throws<ArgumentException>(() => CreateCustomCloudConfiguration(path));
 
-            Assert.Contains("kustoEndpointSuffix", exception.Message);
+            Assert.Contains("kusto.endpointSuffix", exception.Message);
         }
         finally
         {
@@ -525,20 +521,20 @@ public class AzureCloudConfigurationTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    [InlineData("http://kusto.contoso.example/.default")]
-    [InlineData("https://kusto.contoso.example")]
-    [InlineData("https://user@kusto.contoso.example/.default")]
-    [InlineData("https://kusto.contoso.example:443/.default")]
-    [InlineData("https://kusto.contoso.example/.default?query=value")]
-    [InlineData("https://kusto.contoso.example/.default#fragment")]
-    public void ParseCloudValue_CustomCloudWithInvalidKustoScope_ThrowsArgumentException(string scope)
+    [InlineData("http://kusto.contoso.example")]
+    [InlineData("https://user@kusto.contoso.example")]
+    [InlineData("https://kusto.contoso.example:443")]
+    [InlineData("https://kusto.contoso.example/path")]
+    [InlineData("https://kusto.contoso.example?query=value")]
+    [InlineData("https://kusto.contoso.example#fragment")]
+    public void ParseCloudValue_CustomCloudWithInvalidKustoAudience_ThrowsArgumentException(string audience)
     {
-        var path = WriteCustomCloudConfig("kusto.contoso.example", scope);
+        var path = WriteCustomCloudConfig("kusto.contoso.example", audience);
         try
         {
             var exception = Assert.Throws<ArgumentException>(() => CreateCustomCloudConfiguration(path));
 
-            Assert.Contains("kustoScope", exception.Message);
+            Assert.Contains("kusto.audience", exception.Message);
         }
         finally
         {
@@ -558,26 +554,25 @@ public class AzureCloudConfigurationTests
 
     private static string WriteCustomCloudConfig(
         string? kustoEndpointSuffix = null,
-        string? kustoScope = null)
+        string? kustoAudience = null)
     {
         var metadata = new Dictionary<string, object?>
         {
             ["authorityHost"] = "https://login.custom.example",
-            ["armEndpoint"] = "https://management.custom.example",
-            ["resourceManagerAudience"] = "https://management.custom.example/",
-            ["logAnalyticsEndpoint"] = "https://logs.custom.example",
-            ["logAnalyticsScope"] = "https://logs.custom.example/.default",
-            ["applicationInsightsEndpoint"] = "https://insights.custom.example"
+            ["arm"] = new Dictionary<string, object?>
+            {
+                ["endpoint"] = "https://management.custom.example",
+                ["audience"] = "https://management.custom.example"
+            }
         };
 
-        if (kustoEndpointSuffix != null)
+        if (kustoEndpointSuffix != null || kustoAudience != null)
         {
-            metadata["kustoEndpointSuffix"] = kustoEndpointSuffix;
-        }
-
-        if (kustoScope != null)
-        {
-            metadata["kustoScope"] = kustoScope;
+            metadata["kusto"] = new Dictionary<string, object?>
+            {
+                ["endpointSuffix"] = kustoEndpointSuffix,
+                ["audience"] = kustoAudience
+            };
         }
 
         var path = Path.GetTempFileName();

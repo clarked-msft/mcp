@@ -348,7 +348,7 @@ The `azmcp server start` command supports the following options:
 > - `AzureCloud` (default): Azure public cloud
 > - `AzureChinaCloud`: Azure China (operated by 21Vianet)
 > - `AzureUSGovernment`: Azure US Government
-> - `custom`: Uses endpoint metadata from the file passed to `--custom-cloud-config`; custom ARM, Resource Graph, and Log Analytics operations are supported.
+> - `custom`: Uses capability metadata from the file passed to `--custom-cloud-config`. ARM and Resource Graph are required; Log Analytics and Azure Data Explorer data-plane access are optional capabilities. MCP discovery omits commands that are unavailable for the configured capabilities.
 >
 > **Example usage:**
 > ```bash
@@ -2632,7 +2632,7 @@ azmcp optimization recommendation explain --subscription <subscription> \
 
 ### Azure Data Explorer Operations
 
-When the server uses `--cloud custom`, data-plane operations require `kustoEndpointSuffix` and `kustoScope` in the custom-cloud configuration. Cluster URIs must use HTTPS and belong to the configured suffix. See `docs/sovereign-clouds.md` for the complete configuration contract.
+When the server uses `--cloud custom`, data-plane operations require a `kusto` capability containing `endpointSuffix` and `audience`. Cluster URIs must use HTTPS and belong to the configured suffix. See `docs/sovereign-clouds.md` for the complete configuration contract.
 
 ```bash
 # Get details for a Azure Data Explorer cluster

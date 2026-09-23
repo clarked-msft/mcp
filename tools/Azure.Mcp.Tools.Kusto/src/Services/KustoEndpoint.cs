@@ -65,7 +65,7 @@ internal sealed record KustoEndpoint(string ClusterUri, string Scope)
         var uri = ParseClusterUri(clusterUri);
         var host = uri.Host.ToLowerInvariant();
         var scope = cloudConfiguration.CloudType == AzureCloudConfiguration.AzureCloud.CustomCloud
-            ? GetCustomCloudScope(host, cloudConfiguration)
+            ? GetCustomCloudScope(host, cloudConfiguration.Kusto!)
             : GetBuiltInScope(host);
 
         return new($"https://{host}", scope);
@@ -76,11 +76,10 @@ internal sealed record KustoEndpoint(string ClusterUri, string Scope)
         ArgumentNullException.ThrowIfNull(cloudConfiguration);
 
         if (cloudConfiguration.CloudType == AzureCloudConfiguration.AzureCloud.CustomCloud &&
-            (string.IsNullOrWhiteSpace(cloudConfiguration.KustoEndpointSuffix) ||
-             string.IsNullOrWhiteSpace(cloudConfiguration.KustoScope)))
+            cloudConfiguration.Kusto == null)
         {
             throw new InvalidOperationException(
-                "Custom cloud Kusto data-plane operations require both kustoEndpointSuffix and kustoScope.");
+                "Custom cloud Kusto data-plane operations require the kusto capability.");
         }
     }
 
@@ -110,9 +109,9 @@ internal sealed record KustoEndpoint(string ClusterUri, string Scope)
         return uri;
     }
 
-    private static string GetCustomCloudScope(string host, IAzureCloudConfiguration cloudConfiguration)
+    private static string GetCustomCloudScope(string host, KustoCloudConfiguration configuration)
     {
-        var suffix = cloudConfiguration.KustoEndpointSuffix!;
+        var suffix = configuration.EndpointSuffix;
         if (!IsValidSuffixHost(host, suffix))
         {
             throw new ArgumentException(
@@ -120,7 +119,7 @@ internal sealed record KustoEndpoint(string ClusterUri, string Scope)
                 nameof(host));
         }
 
-        return cloudConfiguration.KustoScope!;
+        return configuration.DefaultScope;
     }
 
     private static string GetBuiltInScope(string host)

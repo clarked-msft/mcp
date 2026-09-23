@@ -90,13 +90,21 @@ public sealed class KustoCustomCloudIntegrationTests
         var metadata = new Dictionary<string, object?>
         {
             ["authorityHost"] = "https://login.microsoftonline.com",
-            ["armEndpoint"] = "https://management.azure.com",
-            ["resourceManagerAudience"] = "https://management.azure.com/",
-            ["logAnalyticsEndpoint"] = "https://api.loganalytics.io",
-            ["logAnalyticsScope"] = "https://api.loganalytics.io/.default",
-            ["applicationInsightsEndpoint"] = "https://api.applicationinsights.io",
-            ["kustoEndpointSuffix"] = ".kusto.windows.net",
-            ["kustoScope"] = "https://kusto.kusto.windows.net/.default"
+            ["arm"] = new Dictionary<string, object?>
+            {
+                ["endpoint"] = "https://management.azure.com",
+                ["audience"] = "https://management.azure.com"
+            },
+            ["logAnalytics"] = new Dictionary<string, object?>
+            {
+                ["endpoint"] = "https://api.loganalytics.io",
+                ["audience"] = "https://api.loganalytics.io"
+            },
+            ["kusto"] = new Dictionary<string, object?>
+            {
+                ["endpointSuffix"] = ".kusto.windows.net",
+                ["audience"] = "https://kusto.kusto.windows.net"
+            }
         };
         var path = Path.GetTempFileName();
         File.WriteAllText(path, JsonSerializer.Serialize(metadata));

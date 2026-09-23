@@ -42,8 +42,10 @@ public sealed class KustoServiceTests
         var azureService = Substitute.For<IAzureService>();
         var cloudConfiguration = Substitute.For<IAzureCloudConfiguration>();
         cloudConfiguration.CloudType.Returns(AzureCloudConfiguration.AzureCloud.CustomCloud);
-        cloudConfiguration.KustoEndpointSuffix.Returns(".kusto.contoso.example");
-        cloudConfiguration.KustoScope.Returns("https://kusto.contoso.example/.default");
+        cloudConfiguration.Kusto.Returns(
+            new KustoCloudConfiguration(
+                ".kusto.contoso.example",
+                "https://kusto.contoso.example"));
         azureService.CloudConfiguration.Returns(cloudConfiguration);
         var cacheService = Substitute.For<ICacheService>();
         var service = new KustoService(azureService, cacheService);

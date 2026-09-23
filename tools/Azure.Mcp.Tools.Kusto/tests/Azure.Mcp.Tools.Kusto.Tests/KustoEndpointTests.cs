@@ -15,7 +15,7 @@ public sealed class KustoEndpointTests
     {
         var cloudConfiguration = CreateCustomCloudConfiguration(
             ".kusto.windows.net",
-            "https://custom-kusto.contoso.example/.default");
+            "https://custom-kusto.contoso.example");
 
         var endpoint = KustoEndpoint.Create(
             "https://MyCluster.Kusto.Windows.Net/",
@@ -33,8 +33,7 @@ public sealed class KustoEndpointTests
         var exception = Assert.Throws<InvalidOperationException>(
             () => KustoEndpoint.Create("https://mycluster.kusto.windows.net", cloudConfiguration));
 
-        Assert.Contains("kustoEndpointSuffix", exception.Message);
-        Assert.Contains("kustoScope", exception.Message);
+        Assert.Contains("kusto capability", exception.Message);
     }
 
     [Fact]
@@ -42,7 +41,7 @@ public sealed class KustoEndpointTests
     {
         var cloudConfiguration = CreateCustomCloudConfiguration(
             ".kusto.contoso.example",
-            "https://kusto.contoso.example/.default");
+            "https://kusto.contoso.example");
 
         Assert.Throws<ArgumentException>(
             () => KustoEndpoint.Create("https://mycluster.kusto.windows.net", cloudConfiguration));
@@ -63,7 +62,7 @@ public sealed class KustoEndpointTests
     {
         var cloudConfiguration = CreateCustomCloudConfiguration(
             ".kusto.contoso.example",
-            "https://kusto.contoso.example/.default");
+            "https://kusto.contoso.example");
 
         Assert.Throws<ArgumentException>(
             () => KustoEndpoint.Create(clusterUri, cloudConfiguration));
@@ -74,8 +73,10 @@ public sealed class KustoEndpointTests
     {
         var cloudConfiguration = Substitute.For<IAzureCloudConfiguration>();
         cloudConfiguration.CloudType.Returns(AzureCloudConfiguration.AzureCloud.AzurePublicCloud);
-        cloudConfiguration.KustoEndpointSuffix.Returns(".kusto.contoso.example");
-        cloudConfiguration.KustoScope.Returns("https://kusto.contoso.example/.default");
+        cloudConfiguration.Kusto.Returns(
+            new KustoCloudConfiguration(
+                ".kusto.contoso.example",
+                "https://kusto.contoso.example"));
 
         var endpoint = KustoEndpoint.Create(
             "https://mycluster.kusto.windows.net",
@@ -86,12 +87,14 @@ public sealed class KustoEndpointTests
 
     private static IAzureCloudConfiguration CreateCustomCloudConfiguration(
         string? endpointSuffix,
-        string? scope)
+        string? audience)
     {
         var cloudConfiguration = Substitute.For<IAzureCloudConfiguration>();
         cloudConfiguration.CloudType.Returns(AzureCloudConfiguration.AzureCloud.CustomCloud);
-        cloudConfiguration.KustoEndpointSuffix.Returns(endpointSuffix);
-        cloudConfiguration.KustoScope.Returns(scope);
+        cloudConfiguration.Kusto.Returns(
+            endpointSuffix == null || audience == null
+                ? null
+                : new KustoCloudConfiguration(endpointSuffix, audience));
         return cloudConfiguration;
     }
 }

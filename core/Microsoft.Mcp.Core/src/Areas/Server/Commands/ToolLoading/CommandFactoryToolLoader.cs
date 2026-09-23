@@ -13,6 +13,7 @@ using Microsoft.Mcp.Core.Commands;
 using Microsoft.Mcp.Core.Helpers;
 using Microsoft.Mcp.Core.Models;
 using Microsoft.Mcp.Core.Models.Command;
+using Microsoft.Mcp.Core.Services.Azure.Authentication;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
@@ -25,10 +26,12 @@ namespace Microsoft.Mcp.Core.Areas.Server.Commands.ToolLoading;
 public sealed class CommandFactoryToolLoader(
     ICommandFactory commandFactory,
     IOptions<ServerRuntimeConfiguration> configuration,
-    ILogger<CommandFactoryToolLoader> logger) : BaseToolLoader(logger)
+    ILogger<CommandFactoryToolLoader> logger,
+    IAzureCloudConfiguration? cloudConfiguration = null) : BaseToolLoader(logger)
 {
     private readonly ICommandFactory _commandFactory = commandFactory;
     private readonly IOptions<ServerRuntimeConfiguration> _configuration = configuration;
+    private readonly IAzureCloudConfiguration? _cloudConfiguration = cloudConfiguration;
     private bool StructuredOutputEnabled => _configuration.Value.StructuredOutputMode != null;
     private IReadOnlyDictionary<string, IBaseCommand> _toolCommands =
         (configuration.Value.Namespace == null || configuration.Value.Namespace.Length == 0)
@@ -56,8 +59,7 @@ public sealed class CommandFactoryToolLoader(
         }
 
         var tools = visibleCommands
-            .Where(kvp => !_configuration.Value.ReadOnly || kvp.Value.Metadata.ReadOnly)
-            .Where(kvp => !_configuration.Value.IsHttpMode || !kvp.Value.Metadata.LocalRequired)
+            .Where(kvp => ShouldKeepBaseCommand(kvp.Value, _configuration.Value, _cloudConfiguration))
             .Select(kvp => GetTool(kvp.Key, kvp.Value, StructuredOutputEnabled))
             .ToList();
 
@@ -132,6 +134,23 @@ public sealed class CommandFactoryToolLoader(
         activity?.SetTag(TagName.ToolId, command.Id)
             .SetTag(TagName.ToolSource, "internal")
             .SetTag(TagName.ToolAnnotations, McpHelper.CreateToolAnnotationTelemetry(command));
+
+        var customCloudUnavailabilityReason = GetCustomCloudUnavailabilityReason(command, _cloudConfiguration);
+        if (customCloudUnavailabilityReason != null)
+        {
+            return new CallToolResult
+            {
+                Content =
+                [
+                    new TextContentBlock
+                    {
+                        Text = $"Tool '{toolName}' is not available. {customCloudUnavailabilityReason}",
+                    }
+                ],
+                IsError = true,
+                Meta = new([new(McpHelper.ToolIdMetaKey, command.Id)])
+            };
+        }
 
         // Enforce read-only mode at execution time
         if (_configuration.Value.ReadOnly && !command.Metadata.ReadOnly)

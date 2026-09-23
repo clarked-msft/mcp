@@ -16,6 +16,7 @@ using Microsoft.Mcp.Core.Commands;
 using Microsoft.Mcp.Core.Configuration;
 using Microsoft.Mcp.Core.Extensions;
 using Microsoft.Mcp.Core.Helpers;
+using Microsoft.Mcp.Core.Services.Azure.Authentication;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
@@ -125,7 +126,8 @@ public static partial class ServiceCollectionExtensions
                 toolLoaders.Add(new CommandFactoryToolLoader(
                     sp.GetRequiredService<ICommandFactory>(),
                     Options.Create(additionalToolsServerRuntimeConfiguration),
-                    loggerFactory.CreateLogger<CommandFactoryToolLoader>()));
+                    loggerFactory.CreateLogger<CommandFactoryToolLoader>(),
+                    sp.GetRequiredService<IAzureCloudConfiguration>()));
 
                 return new CompositeToolLoader(toolLoaders, loggerFactory.CreateLogger<CompositeToolLoader>());
             });
@@ -161,7 +163,8 @@ public static partial class ServiceCollectionExtensions
                     consolidatedCommandFactory,
                     sp.GetRequiredService<IOptions<ServerRuntimeConfiguration>>(),
                     loggerFactory.CreateLogger<NamespaceToolLoader>(),
-                    false));
+                    false,
+                    sp.GetRequiredService<IAzureCloudConfiguration>()));
 
                 return new CompositeToolLoader(toolLoaders, loggerFactory.CreateLogger<CompositeToolLoader>());
             });

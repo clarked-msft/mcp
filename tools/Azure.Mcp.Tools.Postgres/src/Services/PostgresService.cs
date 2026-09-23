@@ -54,7 +54,7 @@ public class PostgresService(IAzureService azureService, IEntraTokenProvider ent
                 AzureCloudConfiguration.AzureCloud.AzureChinaCloud =>
                     server + ".postgres.database.chinacloudapi.cn",
                 _ =>
-                    server + ".postgres.database.azure.com"
+                    throw new InvalidOperationException("Azure Database for PostgreSQL data-plane operations are not supported for custom clouds.")
             };
         }
 

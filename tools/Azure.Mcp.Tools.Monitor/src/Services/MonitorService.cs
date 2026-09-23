@@ -469,43 +469,19 @@ public class MonitorService(IAzureService azureService, IResourceResolverService
         return $"{AzureService.CloudConfiguration.ArmEnvironment.Endpoint.AbsoluteUri.TrimEnd('/')}/{subscriptionPath}";
     }
 
-    private LogsQueryAudience GetLogsQueryAudience()
-    {
-        return AzureService.CloudConfiguration.CloudType switch
-        {
-            AzureCloudConfiguration.AzureCloud.AzurePublicCloud => LogsQueryAudience.AzurePublicCloud,
-            AzureCloudConfiguration.AzureCloud.AzureChinaCloud => LogsQueryAudience.AzureChina,
-            AzureCloudConfiguration.AzureCloud.AzureUSGovernmentCloud => LogsQueryAudience.AzureGovernment,
-            AzureCloudConfiguration.AzureCloud.CustomCloud => GetCustomLogsQueryAudience(),
-            _ => throw new NotSupportedException($"Unsupported Azure cloud: {AzureService.CloudConfiguration.CloudType}.")
-        };
-    }
-
-    private LogsQueryAudience GetCustomLogsQueryAudience()
-    {
-        const string defaultScopeSuffix = "/.default";
-        var scope = AzureService.CloudConfiguration.LogAnalyticsScope;
-        if (!scope.EndsWith(defaultScopeSuffix, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException(
-                $"The custom cloud Log Analytics scope must end with '{defaultScopeSuffix}'.");
-        }
-
-        return new LogsQueryAudience(scope[..^defaultScopeSuffix.Length]);
-    }
-
     private async Task<LogsQueryClient> CreateLogsQueryClientAsync(
         string? tenant,
         CancellationToken cancellationToken)
     {
+        var logAnalytics = AzureService.CloudConfiguration.LogAnalytics
+            ?? throw new InvalidOperationException(
+                "Log Analytics queries are not configured for the current Azure cloud.");
         var credential = await GetCredential(tenant, cancellationToken);
         var options = AddDefaultPolicies(new LogsQueryClientOptions());
-        options.Audience = GetLogsQueryAudience();
+        options.Audience = new LogsQueryAudience(logAnalytics.Audience);
         options.Transport = new HttpClientTransport(AzureService.GetClient());
 
-        return AzureService.CloudConfiguration.CloudType == AzureCloudConfiguration.AzureCloud.CustomCloud
-            ? new LogsQueryClient(AzureService.CloudConfiguration.LogAnalyticsEndpoint, credential, options)
-            : new LogsQueryClient(credential, options);
+        return new LogsQueryClient(logAnalytics.Endpoint, credential, options);
     }
 
 }

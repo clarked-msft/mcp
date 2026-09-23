@@ -43,7 +43,7 @@ public sealed class MySqlService(IAzureService azureService)
             AzureCloudConfiguration.AzureCloud.AzureChinaCloud =>
                 "https://ossrdbms-aad.database.chinacloudapi.cn/.default",
             _ =>
-                "https://ossrdbms-aad.database.windows.net/.default"
+                throw new InvalidOperationException("Azure Database for MySQL authentication is not supported for custom clouds.")
         };
     }
 
@@ -67,7 +67,7 @@ public sealed class MySqlService(IAzureService azureService)
                 AzureCloudConfiguration.AzureCloud.AzureChinaCloud =>
                     server + ".mysql.database.chinacloudapi.cn",
                 _ =>
-                    server + ".mysql.database.azure.com"
+                    throw new InvalidOperationException("Azure Database for MySQL data-plane operations are not supported for custom clouds.")
             };
         }
 

@@ -478,7 +478,7 @@ public sealed class StorageService(IAzureService azureService)
             AzureCloudConfiguration.AzureCloud.AzurePublicCloud => $"https://{account}.blob.core.windows.net",
             AzureCloudConfiguration.AzureCloud.AzureChinaCloud => $"https://{account}.blob.core.chinacloudapi.cn",
             AzureCloudConfiguration.AzureCloud.AzureUSGovernmentCloud => $"https://{account}.blob.core.usgovcloudapi.net",
-            _ => $"https://{account}.blob.core.windows.net"
+            _ => throw new InvalidOperationException("Azure Blob Storage data-plane operations are not supported for custom clouds.")
         };
     }
 
@@ -491,7 +491,7 @@ public sealed class StorageService(IAzureService azureService)
             AzureCloudConfiguration.AzureCloud.AzurePublicCloud => $"https://{account}.table.core.windows.net",
             AzureCloudConfiguration.AzureCloud.AzureChinaCloud => $"https://{account}.table.core.chinacloudapi.cn",
             AzureCloudConfiguration.AzureCloud.AzureUSGovernmentCloud => $"https://{account}.table.core.usgovcloudapi.net",
-            _ => $"https://{account}.table.core.windows.net"
+            _ => throw new InvalidOperationException("Azure Table Storage data-plane operations are not supported for custom clouds.")
         };
     }
 }

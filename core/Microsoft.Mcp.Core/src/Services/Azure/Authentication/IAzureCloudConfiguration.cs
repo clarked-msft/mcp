@@ -27,27 +27,12 @@ public interface IAzureCloudConfiguration
     AzureCloudConfiguration.AzureCloud CloudType { get; }
 
     /// <summary>
-    /// Gets the Log Analytics endpoint for the configured cloud.
+    /// Gets the Log Analytics capability for the configured cloud.
     /// </summary>
-    Uri LogAnalyticsEndpoint { get; }
+    CloudServiceConfiguration? LogAnalytics { get; }
 
     /// <summary>
-    /// Gets the OAuth scope used for Log Analytics queries.
+    /// Gets the Azure Data Explorer capability for the configured cloud.
     /// </summary>
-    string LogAnalyticsScope { get; }
-
-    /// <summary>
-    /// Gets the Application Insights endpoint for the configured cloud.
-    /// </summary>
-    Uri ApplicationInsightsEndpoint { get; }
-
-    /// <summary>
-    /// Gets the trusted Kusto endpoint suffix for a custom cloud.
-    /// </summary>
-    string? KustoEndpointSuffix { get; }
-
-    /// <summary>
-    /// Gets the OAuth scope used for Kusto queries in a custom cloud.
-    /// </summary>
-    string? KustoScope { get; }
+    KustoCloudConfiguration? Kusto { get; }
 }

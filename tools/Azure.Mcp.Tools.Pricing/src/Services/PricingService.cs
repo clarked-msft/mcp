@@ -126,7 +126,7 @@ public class PricingService(IAzureCloudConfiguration cloudConfiguration) : IPric
         AzureCloudConfiguration.AzureCloud.AzurePublicCloud => new("https://prices.azure.com"),
         AzureCloudConfiguration.AzureCloud.AzureChinaCloud => new("https://prices.azure.cn"),
         AzureCloudConfiguration.AzureCloud.AzureUSGovernmentCloud => new("https://prices.azure.us"),
-        _ => new("https://prices.azure.com")
+        _ => throw new InvalidOperationException("Azure Retail Prices queries are not supported for custom clouds.")
     };
 
     private static PriceItem MapToPriceItem(RetailPriceItem item)

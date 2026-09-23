@@ -918,7 +918,7 @@ azmcp server start --cloud AzureChinaCloud
 $env:AZURE_CLOUD = "AzureUSGovernment"
 ```
 
-Custom ARM, Resource Graph, Log Analytics, and Azure Data Explorer endpoints can be configured with a local JSON file:
+Custom ARM and Resource Graph endpoints, with optional Log Analytics and Azure Data Explorer capabilities, can be configured with a local JSON file. MCP discovery automatically omits commands that are unavailable for the configured custom cloud:
 
 ```bash
 azmcp server start --cloud custom --custom-cloud-config ./custom-cloud.json

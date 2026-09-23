@@ -50,8 +50,12 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
             ?? configuration["CUSTOM_CLOUD_CONFIG"]
             ?? Environment.GetEnvironmentVariable("CUSTOM_CLOUD_CONFIG");
 
-        (AuthorityHost, ArmEnvironment, CloudType, LogAnalyticsEndpoint, LogAnalyticsScope, ApplicationInsightsEndpoint, KustoEndpointSuffix, KustoScope) =
-            ParseCloudValue(cloudValue, customCloudConfig);
+        var profile = ParseCloudValue(cloudValue, customCloudConfig);
+        AuthorityHost = profile.AuthorityHost;
+        ArmEnvironment = profile.ArmEnvironment;
+        CloudType = profile.CloudType;
+        LogAnalytics = profile.LogAnalytics;
+        Kusto = profile.Kusto;
 
         logger?.LogDebug(
             "Azure cloud configuration initialized. Cloud value: '{CloudValue}', AuthorityHost: '{AuthorityHost}', ArmEnvironment: '{ArmEnvironment}'",
@@ -68,35 +72,32 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
 
     public AzureCloud CloudType { get; }
 
-    public Uri LogAnalyticsEndpoint { get; }
+    public CloudServiceConfiguration? LogAnalytics { get; }
 
-    /// <inheritdoc/>
-    public string LogAnalyticsScope { get; }
+    public KustoCloudConfiguration? Kusto { get; }
 
-    public Uri ApplicationInsightsEndpoint { get; }
-
-    public string? KustoEndpointSuffix { get; }
-
-    public string? KustoScope { get; }
-
-    private static (Uri authorityHost, ArmEnvironment armEnvironment, AzureCloud cloudType, Uri logAnalyticsEndpoint, string logAnalyticsScope, Uri applicationInsightsEndpoint, string? kustoEndpointSuffix, string? kustoScope) ParseCloudValue(
+    private static AzureCloudProfile ParseCloudValue(
         string? cloudValue,
         string? customCloudConfig)
     {
         if (string.IsNullOrWhiteSpace(cloudValue))
         {
-            return CreateBuiltIn(AzureAuthorityHosts.AzurePublicCloud, ArmEnvironment.AzurePublicCloud, AzureCloud.AzurePublicCloud, "https://api.loganalytics.io", "https://api.applicationinsights.io");
+            return CreateBuiltIn(
+                AzureAuthorityHosts.AzurePublicCloud,
+                ArmEnvironment.AzurePublicCloud,
+                AzureCloud.AzurePublicCloud,
+                "https://api.loganalytics.io");
         }
 
         // Map common sovereign cloud names to authority hosts and ARM environments
         return cloudValue.ToLowerInvariant() switch
         {
             "azurecloud" or "azurepubliccloud" or "public" or "azurepublic" =>
-                CreateBuiltIn(AzureAuthorityHosts.AzurePublicCloud, ArmEnvironment.AzurePublicCloud, AzureCloud.AzurePublicCloud, "https://api.loganalytics.io", "https://api.applicationinsights.io"),
+                CreateBuiltIn(AzureAuthorityHosts.AzurePublicCloud, ArmEnvironment.AzurePublicCloud, AzureCloud.AzurePublicCloud, "https://api.loganalytics.io"),
             "azurechinacloud" or "china" or "azurechina" =>
-                CreateBuiltIn(AzureAuthorityHosts.AzureChina, ArmEnvironment.AzureChina, AzureCloud.AzureChinaCloud, "https://api.loganalytics.azure.cn", "https://api.applicationinsights.azure.cn"),
+                CreateBuiltIn(AzureAuthorityHosts.AzureChina, ArmEnvironment.AzureChina, AzureCloud.AzureChinaCloud, "https://api.loganalytics.azure.cn"),
             "azureusgovernment" or "azureusgovernmentcloud" or "usgov" or "usgovernment" =>
-                CreateBuiltIn(AzureAuthorityHosts.AzureGovernment, ArmEnvironment.AzureGovernment, AzureCloud.AzureUSGovernmentCloud, "https://api.loganalytics.us", "https://api.applicationinsights.us"),
+                CreateBuiltIn(AzureAuthorityHosts.AzureGovernment, ArmEnvironment.AzureGovernment, AzureCloud.AzureUSGovernmentCloud, "https://api.loganalytics.us"),
             "custom" => LoadCustomCloud(customCloudConfig),
             _ => throw new ArgumentException(
                 $"Unrecognized cloud value '{cloudValue}'. Supported values are: AzureCloud, AzurePublicCloud, Public, AzurePublic, AzureChinaCloud, China, AzureChina, AzureUSGovernment, AzureUSGovernmentCloud, USGov, USGovernment, custom.",
@@ -104,15 +105,22 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
         };
     }
 
-    private static (Uri, ArmEnvironment, AzureCloud, Uri, string, Uri, string?, string?) CreateBuiltIn(
+    private static AzureCloudProfile CreateBuiltIn(
         Uri authorityHost,
         ArmEnvironment armEnvironment,
         AzureCloud cloudType,
-        string logAnalyticsEndpoint,
-        string applicationInsightsEndpoint) =>
-        (authorityHost, armEnvironment, cloudType, new Uri(logAnalyticsEndpoint), $"{new Uri(logAnalyticsEndpoint).AbsoluteUri.TrimEnd('/')}/.default", new Uri(applicationInsightsEndpoint), null, null);
+        string logAnalyticsEndpoint)
+    {
+        var endpoint = new Uri(logAnalyticsEndpoint);
+        return new(
+            authorityHost,
+            armEnvironment,
+            cloudType,
+            new(endpoint, endpoint.AbsoluteUri.TrimEnd('/')),
+            null);
+    }
 
-    private static (Uri, ArmEnvironment, AzureCloud, Uri, string, Uri, string?, string?) LoadCustomCloud(string? path)
+    private static AzureCloudProfile LoadCustomCloud(string? path)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -124,43 +132,49 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
             CustomCloudMetadataJsonContext.Default.CustomCloudMetadata)
             ?? throw new ArgumentException("The custom cloud configuration file is empty.", nameof(path));
 
-        var authorityHost = ParseHttpsUri(metadata.AuthorityHost, nameof(metadata.AuthorityHost));
-        var armEndpoint = ParseHttpsUri(metadata.ArmEndpoint, nameof(metadata.ArmEndpoint));
-        var logAnalyticsEndpoint = ParseHttpsUri(metadata.LogAnalyticsEndpoint, nameof(metadata.LogAnalyticsEndpoint));
-        var applicationInsightsEndpoint = ParseHttpsUri(metadata.ApplicationInsightsEndpoint, nameof(metadata.ApplicationInsightsEndpoint));
-        if (string.IsNullOrWhiteSpace(metadata.ResourceManagerAudience))
+        var authorityHost = ParseHttpsOrigin(metadata.AuthorityHost, nameof(metadata.AuthorityHost));
+        if (metadata.Arm == null)
         {
-            throw new ArgumentException("Custom cloud metadata must specify resourceManagerAudience.", nameof(path));
+            throw new ArgumentException("Custom cloud metadata must specify the arm capability.", nameof(path));
         }
 
-        if (string.IsNullOrWhiteSpace(metadata.LogAnalyticsScope))
-        {
-            throw new ArgumentException("Custom cloud metadata must specify logAnalyticsScope.", nameof(path));
-        }
+        var arm = ParseServiceCapability(metadata.Arm, "arm");
+        var logAnalytics = metadata.LogAnalytics == null
+            ? null
+            : ParseServiceCapability(metadata.LogAnalytics, "logAnalytics");
+        var kusto = metadata.Kusto == null
+            ? null
+            : ParseKustoCapability(metadata.Kusto);
 
-        var (kustoEndpointSuffix, kustoScope) = ParseKustoMetadata(metadata);
-
-        return (authorityHost, new ArmEnvironment(armEndpoint, metadata.ResourceManagerAudience), AzureCloud.CustomCloud, logAnalyticsEndpoint, metadata.LogAnalyticsScope, applicationInsightsEndpoint, kustoEndpointSuffix, kustoScope);
+        return new(
+            authorityHost,
+            new ArmEnvironment(arm.Endpoint, arm.Audience),
+            AzureCloud.CustomCloud,
+            logAnalytics,
+            kusto);
     }
 
-    private static (string? endpointSuffix, string? scope) ParseKustoMetadata(CustomCloudMetadata metadata)
+    private static CloudServiceConfiguration ParseServiceCapability(
+        CustomCloudServiceMetadata metadata,
+        string propertyName)
     {
-        if (metadata.KustoEndpointSuffix == null && metadata.KustoScope == null)
+        var endpoint = ParseHttpsOrigin(metadata.Endpoint, $"{propertyName}.endpoint");
+        var audience = ParseHttpsAudience(metadata.Audience, $"{propertyName}.audience");
+        return new(endpoint, audience);
+    }
+
+    private static KustoCloudConfiguration ParseKustoCapability(CustomCloudKustoMetadata metadata)
+    {
+        if (string.IsNullOrWhiteSpace(metadata.EndpointSuffix))
         {
-            return (null, null);
+            throw new ArgumentException(
+                "Custom cloud metadata property 'kusto.endpointSuffix' must be specified.",
+                nameof(metadata.EndpointSuffix));
         }
 
-        if (string.IsNullOrWhiteSpace(metadata.KustoEndpointSuffix))
-        {
-            throw new ArgumentException("Custom cloud metadata must specify kustoEndpointSuffix when kustoScope is configured.", nameof(metadata.KustoEndpointSuffix));
-        }
-
-        if (string.IsNullOrWhiteSpace(metadata.KustoScope))
-        {
-            throw new ArgumentException("Custom cloud metadata must specify kustoScope when kustoEndpointSuffix is configured.", nameof(metadata.KustoScope));
-        }
-
-        return (NormalizeKustoEndpointSuffix(metadata.KustoEndpointSuffix), ValidateKustoScope(metadata.KustoScope));
+        return new(
+            NormalizeKustoEndpointSuffix(metadata.EndpointSuffix),
+            ParseHttpsAudience(metadata.Audience, "kusto.audience"));
     }
 
     private static string NormalizeKustoEndpointSuffix(string value)
@@ -177,13 +191,13 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
             value.Contains("#", StringComparison.Ordinal) ||
             value.EndsWith(".", StringComparison.Ordinal))
         {
-            throw new ArgumentException("Custom cloud metadata property 'kustoEndpointSuffix' must be a DNS suffix.", nameof(value));
+            throw new ArgumentException("Custom cloud metadata property 'kusto.endpointSuffix' must be a DNS suffix.", nameof(value));
         }
 
         var host = value.TrimStart('.');
         if (Uri.CheckHostName(host) != UriHostNameType.Dns || host.Split('.').Length < 2)
         {
-            throw new ArgumentException("Custom cloud metadata property 'kustoEndpointSuffix' must be a multi-label DNS suffix.", nameof(value));
+            throw new ArgumentException("Custom cloud metadata property 'kusto.endpointSuffix' must be a multi-label DNS suffix.", nameof(value));
         }
 
         foreach (var label in host.Split('.'))
@@ -193,33 +207,16 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
                 !char.IsLetterOrDigit(label[^1]) ||
                 label.Any(c => !char.IsLetterOrDigit(c) && c != '-'))
             {
-                throw new ArgumentException("Custom cloud metadata property 'kustoEndpointSuffix' contains an invalid DNS label.", nameof(value));
+                throw new ArgumentException("Custom cloud metadata property 'kusto.endpointSuffix' contains an invalid DNS label.", nameof(value));
             }
         }
 
         return $".{host.ToLowerInvariant()}";
     }
 
-    private static string ValidateKustoScope(string value)
+    private static string ParseHttpsAudience(string? value, string propertyName)
     {
-        if (!value.Equals(value.Trim(), StringComparison.Ordinal) ||
-            value.Any(c => c > 127) ||
-            value.Contains("%", StringComparison.Ordinal) ||
-            !Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
-            uri.Scheme != Uri.UriSchemeHttps ||
-            Uri.CheckHostName(uri.Host) != UriHostNameType.Dns ||
-            !string.IsNullOrEmpty(uri.UserInfo) ||
-            !string.IsNullOrEmpty(uri.Query) ||
-            !string.IsNullOrEmpty(uri.Fragment) ||
-            HasExplicitPort(value) ||
-            !uri.AbsolutePath.EndsWith("/.default", StringComparison.Ordinal) ||
-            uri.AbsolutePath.Contains("/../", StringComparison.Ordinal) ||
-            uri.AbsolutePath.Contains("/./", StringComparison.Ordinal))
-        {
-            throw new ArgumentException("Custom cloud metadata property 'kustoScope' must be a canonical absolute HTTPS scope ending in '/.default'.", nameof(value));
-        }
-
-        return value;
+        return ParseHttpsOrigin(value, propertyName).AbsoluteUri.TrimEnd('/');
     }
 
     private static bool HasExplicitPort(string value)
@@ -230,11 +227,24 @@ public class AzureCloudConfiguration : IAzureCloudConfiguration
         return authority.Contains(":", StringComparison.Ordinal);
     }
 
-    private static Uri ParseHttpsUri(string? value, string propertyName)
+    private static Uri ParseHttpsOrigin(string? value, string propertyName)
     {
-        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+        if (string.IsNullOrWhiteSpace(value) ||
+            !value.Equals(value.Trim(), StringComparison.Ordinal) ||
+            value.Any(c => c > 127) ||
+            value.Contains("%", StringComparison.Ordinal) ||
+            !Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+            uri.Scheme != Uri.UriSchemeHttps ||
+            Uri.CheckHostName(uri.Host) != UriHostNameType.Dns ||
+            !string.IsNullOrEmpty(uri.UserInfo) ||
+            !string.IsNullOrEmpty(uri.Query) ||
+            !string.IsNullOrEmpty(uri.Fragment) ||
+            HasExplicitPort(value) ||
+            uri.AbsolutePath != "/")
         {
-            throw new ArgumentException($"Custom cloud metadata property '{propertyName}' must be an absolute HTTPS URI.", propertyName);
+            throw new ArgumentException(
+                $"Custom cloud metadata property '{propertyName}' must be a canonical HTTPS origin.",
+                propertyName);
         }
 
         return uri;

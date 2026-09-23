@@ -8,6 +8,8 @@ deepened: 2026-09-10
 
 # feat: Add custom cloud support for Kusto queries
 
+> **Implementation note (September 23, 2026):** This completed plan records the original implementation design. The custom-cloud configuration contract was subsequently replaced by the nested `arm`, `logAnalytics`, and `kusto` capability schema documented in [`docs/sovereign-clouds.md`](../../sovereign-clouds.md). In particular, configured values are now OAuth audiences and the runtime derives `/.default` scopes.
+
 ## Overview
 
 Extend configuration-driven custom-cloud support to Azure Data Explorer (Kusto) data-plane queries. A custom-cloud deployment will declare a trusted Kusto DNS suffix and an explicit OAuth scope; Kusto commands will continue discovering cluster URIs through Azure Resource Graph or accepting `--cluster-uri`, but every resulting URI will be validated before Kusto-scope token acquisition, Kusto client caching, or Kusto data-plane HTTP. Subscription discovery may first perform the management-plane authentication and Resource Graph request required to obtain the URI.
