@@ -14,27 +14,64 @@ namespace Azure.Mcp.Tools.Adme.Tests;
 
 public sealed class AdmeServiceHelperTests
 {
-    [Theory]
-    [InlineData(TestConstants.Endpoint)]
-    [InlineData("https://sample.oep.ppe.azure-int.net")]
-    public void ValidateEndpoint_AcceptsTrustedEndpoint(string endpoint)
+    [Fact]
+    public async Task SendAsync_PreservesAdmeFailureResponse()
     {
-        var result = AdmeServiceHelper.ValidateEndpoint(new Uri(endpoint));
+        const string responseContent = "{\"code\":400,\"message\":\"Invalid cursor\"}";
+        var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent(responseContent),
+        });
 
-        Assert.Equal(endpoint, result.AbsoluteUri.TrimEnd('/'));
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => AdmeServiceHelper.SendAsync(
+            CreateCredentialProvider(),
+            new FakeHttpClientFactory(handler),
+            TestConstants.Endpoint,
+            TestConstants.DataPartition,
+            null,
+            "/api/test",
+            AdmeJsonContext.Default.JsonElement,
+            TestContext.Current.CancellationToken));
+
+        Assert.Equal((int)HttpStatusCode.BadRequest, exception.Status);
+        Assert.Equal(responseContent, exception.Message);
+    }
+
+    [Fact]
+    public async Task SendAsync_AppendsDataPartitionHintToUnauthorizedResponse()
+    {
+        const string responseContent = "User is unauthorized to perform this action";
+        var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized)
+        {
+            Content = new StringContent(responseContent),
+        });
+
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => AdmeServiceHelper.SendAsync(
+            CreateCredentialProvider(),
+            new FakeHttpClientFactory(handler),
+            TestConstants.Endpoint,
+            TestConstants.DataPartition,
+            null,
+            "/api/test",
+            AdmeJsonContext.Default.JsonElement,
+            TestContext.Current.CancellationToken));
+
+        Assert.Equal((int)HttpStatusCode.Unauthorized, exception.Status);
+        Assert.StartsWith(responseContent, exception.Message);
+        Assert.Contains("verify the data partition name is correct and correctly cased", exception.Message);
     }
 
     [Theory]
     [InlineData(HttpStatusCode.BadRequest, "ADME rejected the client request")]
     [InlineData(HttpStatusCode.Unauthorized, "ADME authentication failed")]
     [InlineData(HttpStatusCode.Forbidden, "ADME authorization failed")]
-    public async Task SendAsync_MapsAdmeFailureStatusAndMessage(
+    public async Task SendAsync_UsesFallbackMessageForEmptyFailureResponse(
         HttpStatusCode statusCode,
         string expectedMessage)
     {
         var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(statusCode)
         {
-            Content = new StringContent("sensitive backend details"),
+            Content = new StringContent("  "),
         });
 
         var exception = await Assert.ThrowsAsync<RequestFailedException>(() => AdmeServiceHelper.SendAsync(
@@ -49,7 +86,27 @@ public sealed class AdmeServiceHelperTests
 
         Assert.Equal((int)statusCode, exception.Status);
         Assert.StartsWith(expectedMessage, exception.Message);
-        Assert.DoesNotContain("sensitive backend details", exception.Message);
+    }
+
+    [Fact]
+    public async Task SendAsync_TruncatesLongAdmeFailureResponse()
+    {
+        var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent(new string('a', 2000)),
+        });
+
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => AdmeServiceHelper.SendAsync(
+            CreateCredentialProvider(),
+            new FakeHttpClientFactory(handler),
+            TestConstants.Endpoint,
+            TestConstants.DataPartition,
+            null,
+            "/api/test",
+            AdmeJsonContext.Default.JsonElement,
+            TestContext.Current.CancellationToken));
+
+        Assert.Equal(new string('a', 1024), exception.Message);
     }
 
     [Fact]

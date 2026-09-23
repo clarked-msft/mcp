@@ -3,6 +3,7 @@
 
 using Azure.Identity;
 using Azure.Mcp.Tools.Adme.Commands.Schema;
+using Azure.Mcp.Tools.Adme.Models;
 using Azure.Mcp.Tools.Adme.Models.Schema;
 using Azure.Mcp.Tools.Adme.Services;
 using Microsoft.Mcp.Tests.Client;
@@ -49,7 +50,7 @@ public sealed class SchemaListCommandTests : CommandUnitTestsBase<SchemaListComm
             2,
             25,
             Arg.Any<CancellationToken>())
-            .Returns(expected);
+            .Returns(new AdmeResponse<SchemaListResponse>(expected, "test-correlation-id"));
 
         var response = await ExecuteCommandAsync(
             "--endpoint", TestConstants.Endpoint,
@@ -67,12 +68,13 @@ public sealed class SchemaListCommandTests : CommandUnitTestsBase<SchemaListComm
             "--offset", "2",
             "--limit", "25");
 
-        var result = ValidateAndDeserializeResponse(response, AdmeJsonContext.Default.SchemaListResponse);
-        Assert.Equal(expected.Offset, result.Offset);
-        Assert.Equal(expected.Count, result.Count);
-        Assert.Equal(expected.TotalCount, result.TotalCount);
-        Assert.Equal(expected.SchemaInfos.Single().SchemaIdentity?.Id, result.SchemaInfos.Single().SchemaIdentity?.Id);
-        Assert.Equal(expected.SchemaInfos.Single().SupersededBy?.Id, result.SchemaInfos.Single().SupersededBy?.Id);
+        var result = ValidateAndDeserializeResponse(response, AdmeJsonContext.Default.AdmeResponseSchemaListResponse);
+        Assert.Equal(expected.Offset, result.Result.Offset);
+        Assert.Equal(expected.Count, result.Result.Count);
+        Assert.Equal(expected.TotalCount, result.Result.TotalCount);
+        Assert.Equal(expected.SchemaInfos.Single().SchemaIdentity?.Id, result.Result.SchemaInfos.Single().SchemaIdentity?.Id);
+        Assert.Equal(expected.SchemaInfos.Single().SupersededBy?.Id, result.Result.SchemaInfos.Single().SupersededBy?.Id);
+        Assert.Equal("test-correlation-id", result.CorrelationId);
         await Service.Received(1).ListSchemasAsync(
             TestConstants.Endpoint,
             TestConstants.DataPartition,
@@ -110,14 +112,15 @@ public sealed class SchemaListCommandTests : CommandUnitTestsBase<SchemaListComm
             null,
             null,
             Arg.Any<CancellationToken>())
-            .Returns(new SchemaListResponse { SchemaInfos = [] });
+            .Returns(new AdmeResponse<SchemaListResponse>(new SchemaListResponse { SchemaInfos = [] }, null));
 
         var response = await ExecuteCommandAsync(
             "--endpoint", TestConstants.Endpoint,
             "--data-partition", TestConstants.DataPartition);
 
-        var result = ValidateAndDeserializeResponse(response, AdmeJsonContext.Default.SchemaListResponse);
-        Assert.Empty(result.SchemaInfos);
+        var result = ValidateAndDeserializeResponse(response, AdmeJsonContext.Default.AdmeResponseSchemaListResponse);
+        Assert.Empty(result.Result.SchemaInfos);
+        Assert.Null(result.CorrelationId);
         await Service.Received(1).ListSchemasAsync(
             TestConstants.Endpoint,
             TestConstants.DataPartition,
@@ -210,8 +213,12 @@ public sealed class SchemaListCommandTests : CommandUnitTestsBase<SchemaListComm
     [Theory]
     [InlineData("--latest-version --schema-version-minor 0")]
     [InlineData("--latest-version --schema-version-major 1 --schema-version-patch 0")]
+    [InlineData("--schema-version-major -1")]
+    [InlineData("--schema-version-minor -1")]
+    [InlineData("--schema-version-patch -1")]
     [InlineData("--offset -1")]
     [InlineData("--limit -1")]
+    [InlineData("--limit 0")]
     public async Task Execute_WithApiRejectedOptions_DoesNotCallService(string invalidArguments)
     {
         var response = await ExecuteCommandAsync(

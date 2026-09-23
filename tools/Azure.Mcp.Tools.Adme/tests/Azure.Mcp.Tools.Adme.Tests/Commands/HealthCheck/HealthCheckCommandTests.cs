@@ -22,7 +22,9 @@ public sealed class HealthCheckCommandTests : CommandUnitTestsBase<HealthCheckCo
             TestConstants.DataPartition,
             TestConstants.Tenant,
                 Arg.Any<CancellationToken>())
-            .Returns(new HealthCheckResult(true, null, true, null, 200));
+            .Returns(new AdmeResponse<HealthCheckResult>(
+                new HealthCheckResult(200),
+                "test-correlation-id"));
 
         var response = await ExecuteCommandAsync(
             "--endpoint", TestConstants.Endpoint,
@@ -31,10 +33,9 @@ public sealed class HealthCheckCommandTests : CommandUnitTestsBase<HealthCheckCo
 
         var result = ValidateAndDeserializeResponse(
             response,
-            AdmeJsonContext.Default.HealthCheckResult);
-        Assert.True(result.AuthOk);
-        Assert.True(result.ConnectivityOk);
-        Assert.Equal(200, result.ConnectivityStatusCode);
+            AdmeJsonContext.Default.AdmeResponseHealthCheckResult);
+        Assert.Equal(200, result.Result.StatusCode);
+        Assert.Equal("test-correlation-id", result.CorrelationId);
     }
 
     [Fact]
@@ -45,7 +46,7 @@ public sealed class HealthCheckCommandTests : CommandUnitTestsBase<HealthCheckCo
                 Arg.Any<string>(),
                 Arg.Any<string?>(),
                 Arg.Any<CancellationToken>())
-            .Returns<HealthCheckResult>(_ => throw new InvalidOperationException("boom"));
+            .Returns<AdmeResponse<HealthCheckResult>>(_ => throw new InvalidOperationException("boom"));
 
         var response = await ExecuteCommandAsync(
             "--endpoint", TestConstants.Endpoint,

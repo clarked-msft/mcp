@@ -13,9 +13,31 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 
 | Tool Name | Test Prompt | Interaction |
 |:----------|:------------|:------------|
-| adme_health_check | Check authentication and connectivity for ADME endpoint <endpoint> and data partition <data-partition> | none |
-| adme_schema_get | Get ADME schema <authority:source:entity-type:version> from endpoint <endpoint> in data partition <data-partition> | none |
-| adme_schema_list | List shared Well schemas from ADME endpoint <endpoint> in data partition <data-partition> | none |
+| adme_health_check | Check health and authentication for ADME endpoint <endpoint> and data partition <data-partition> | none |
+| adme_schema_get | Get ADME schema for kind <authority:source:entity-type:version> from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_schema_get | Show the fields, types, and structure of OSDU schema <authority:source:entity-type:version> from ADME endpoint <endpoint> in data partition <data-partition> | none |
+| adme_schema_get | Retrieve the full JSON definition for OSDU schema <authority:source:entity-type:version> from ADME endpoint <endpoint> in data partition <data-partition> | none |
+| adme_schema_list | List all shared Well schemas from ADME endpoint <endpoint> in data partition <data-partition> | none |
+| adme_schema_list | List the latest published SHARED OSDU schemas for entity type master-data--Well from ADME endpoint <endpoint> in data partition <data-partition> | none |
+| adme_schema_list | List DEVELOPMENT OSDU schemas from authority <authority> and source <source> in ADME endpoint <endpoint> and data partition <data-partition> | none |
+| adme_storage_record_fetch | Fetch ADME records <record-id-1> and <record-id-2> from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_fetch | Fetch the full content of ADME records <record-id-1>, <record-id-2>, and <record-id-3> in one batch from endpoint <endpoint> and data partition <data-partition> | none |
+| adme_storage_record_fetch | Fetch only attributes data.Name and data.Description for ADME records <record-id-1> and <record-id-2> from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_fetch | Fetch ADME record <record-id> with frame-of-reference conversion and report its conversion status and errors from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_get | Get a OSDU record <record-id> from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_get | Get version <record-version> of OSDU record <record-id> from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_get | Get only attributes data.WellID and data.Name from OSDU record <record-id> at endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_list | List ADME records of kind osdu:wks:master-data--Well:1.0.0 from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_list | List the first 25 ADME record IDs for kind osdu:wks:master-data--Well:1.0.0 from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_list | Continue listing ADME record IDs for kind osdu:wks:master-data--Well:1.0.0 using cursor <cursor> from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_storage_record_version_list | List all versions of ADME record <record-id> from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_search | Search ADME records of kind osdu:wks:master-data--Well:1.0.0 matching indexed-field Lucene filter <lucene-query> from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_search | Search ADME records matching <lucene-query> across wildcard or multiple kinds osdu:wks:master-data--Well:* and osdu:wks:master-data--Wellbore:*, returning only id, kind, and data.Name, from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_search | Search more than 10000 ADME records across kind osdu:wks:master-data--Wellbore:* as a cursor-paginated point-in-time snapshot, returning id, kind, and data.Name, from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_search | Continue an ADME snapshot search using cursor <cursor>, resending the original kind osdu:wks:master-data--Wellbore:*, limit, and returned fields id, kind, and data.Name unchanged, from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_search | Search more than 10000 ADME records using the cursor API with its search_after option for kind osdu:wks:master-data--Wellbore:*, returning only id and kind, from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_search | Search ADME records of kind osdu:wks:master-data--Well:1.0.0 inside bounding box <bounding-box>, sorted by id descending, from endpoint <endpoint> in data partition <data-partition> | none |
+| adme_search | Query records as owner for kind osdu:wks:master-data--Well:1.0.0, highlighting <field>, from endpoint <endpoint> in data partition <data-partition> | none |
 
 ## Azure Advisor
 
@@ -26,8 +48,8 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | advisor_metadata_get | Show me the catalog details for Advisor recommendation type <recommendation-type-id> | none |
 | advisor_metadata_get | Get the German (de) metadata for Advisor recommendation type <recommendation-type-id> | none |
 | advisor_metadata_get | What is the impact and category of Advisor recommendation type <recommendation-type-id>? | none |
-| advisor_metadata_get | Show the remediation actions for Advisor recommendation type <recommendation-type-id> | none |
 | advisor_metadata_get | When does Advisor recommendation type <recommendation-type-id> retire? | none |
+| advisor_metadata_get | Explain what Advisor recommendation type <recommendation-type-id> means and what actions it recommends | none |
 | advisor_metadata_list | List the Advisor recommendation metadata catalog | none |
 | advisor_metadata_list | Before I deploy any virtual machines, what kinds of recommendations could Advisor produce for them? | none |
 | advisor_metadata_list | List high-impact Advisor metadata for microsoft.sql/servers/databases | none |
@@ -93,6 +115,21 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | advisor_recommendation_summary | Count active service-retirement Advisor recommendations with retirement dates on or after March 31, 2026 | none |
 | advisor_recommendation_summary | Show the impact breakdown for Advisor recommendations affecting resource my-web-app | none |
 | advisor_recommendation_summary | Break down counts by impact for Advisor recommendations whose problem text mentions "encryption" | none |
+| advisor_remediation_get | Get the remediation package for Advisor recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Fix or remediate the Advisor recommendation type id <recommendation-type-id>? | none |
+| advisor_remediation_get | Show me the remediation steps for Advisor recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Show me the remediation actions for recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Give me the CLI and PowerShell scripts to remediate recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Get the ARM and Bicep artifacts to fix Advisor recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Get the terraform to fix Advisor recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Resolve or remediate Advisor recommendation type id <recommendation-type-id>? | none |
+| advisor_remediation_get | What are the steps to remediate recommendation type id <recommendation-type-id>? | none |
+| advisor_remediation_get | Give me a ready-to-run script to remediate recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Get the executable automation artifacts to remediate recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Get the deployment artifacts to fix Advisor recommendation type id <recommendation-type-id> | none |
+| advisor_remediation_get | Is remediating recommendation type id <recommendation-type-id> destructive or reversible? | none |
+| advisor_remediation_get | How do I verify the fix for Advisor recommendation type id <recommendation-type-id>? | none |
+| advisor_remediation_get | Get the Azure CLI commands to remediate recommendation type id <recommendation-type-id> | none |
 
 ## Azure AI Search
 
@@ -192,23 +229,24 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | appservice_database_add | Connect database <database_name> to my app service <app_name> using connection string <connection_string> in resource group <resource_group> | none |
 | appservice_database_add | Set up database <database_name> for app service <app_name> with connection string <connection_string> under resource group <resource_group> | none |
 | appservice_database_add | Configure database <database_name> for app service <app_name> with the connection string <connection_string> in resource group <resource_group> | none |
-| appservice_webapp_diagnostic_diagnose | Use Azure App Service diagnostics to diagnose web app <webapp> in <resource_group> with detector <detector_name> | none |
-| appservice_webapp_diagnostic_diagnose | Use Azure App Service diagnostics to diagnose web app <webapp> in <resource_group> with detector <detector_name> between <start_time> and <end_time> with interval <interval> | investigation-required |
-| appservice_webapp_diagnostic_list | List the Azure App Service diagnostic detectors for web app <webapp> in <resource_group> | investigation-required |
-| appservice_webapp_change-state | Start the web app <app> in <resource_group> | none |
-| appservice_webapp_change-state | Stop the web app <app> in <resource_group> | none |
-| appservice_webapp_change-state | Restart the web app <app> in <resource_group> | none |
-| appservice_webapp_change-state | Soft restart the web app <app> in <resource_group> waiting for restart to complete | none |
+| appservice_webapp_diagnostic_diagnose | Use Azure App Service diagnostics to diagnose web app <webapp> in resource group <resource_group> with detector <detector_name> | none |
+| appservice_webapp_diagnostic_diagnose | Use Azure App Service diagnostics to diagnose web app <webapp> in resource group <resource_group> with detector <detector_name> between <start_time> and <end_time> with interval <interval> | investigation-required |
+| appservice_webapp_diagnostic_list | List the Azure App Service diagnostic detectors for web app <webapp> in resource group <resource_group> | investigation-required |
+| appservice_webapp_change-state | Start the web app <app> in resource group <resource_group> | none |
+| appservice_webapp_change-state | Stop the web app <app> in resource group <resource_group> | none |
+| appservice_webapp_change-state | Restart the web app <app> in resource group <resource_group> | none |
+| appservice_webapp_change-state | Soft restart the web app <app> in resource group <resource_group> waiting for restart to complete | none |
 | appservice_webapp_get | List the web apps in my subscription | none |
-| appservice_webapp_get | Show me the web apps in my <resource_group> resource group | investigation-required |
-| appservice_webapp_get | Get the details for web app <webapp> in <resource_group> | none |
-| appservice_webapp_deployment_get | List the deployments for web app <webapp> in <resource_group> | none |
-| appservice_webapp_deployment_get | Get the deployment <deployment-id> for web app <webapp> in <resource_group> | none |
-| appservice_webapp_settings_get-appsettings | List the application settings for web app <webapp> in <resource_group> | none |
-| appservice_webapp_settings_get-appsettings | Get the application settings for web app <webapp> in <resource_group> | none |
-| appservice_webapp_settings_update-appsettings | Add application setting <setting-name> with <setting-value> to web app <webapp> in <resource_group> | none |
-| appservice_webapp_settings_update-appsettings | Set application setting <setting-name> with <setting-value> to web app <webapp> in <resource_group> | none |
-| appservice_webapp_settings_update-appsettings | Delete application setting <setting-name> from web app <webapp> in <resource_group> | none |
+| appservice_webapp_get | Show me the web apps in my resource group <resource_group> | investigation-required |
+| appservice_webapp_get | Get the details for web app <webapp> in resource group <resource_group> | none |
+| appservice_webapp_get | Get app service details for <app-service-resource-id> | none |
+| appservice_webapp_deployment_get | List the deployments for web app <webapp> in resource group <resource_group> | none |
+| appservice_webapp_deployment_get | Get the deployment <deployment-id> for web app <webapp> in resource group <resource_group> | none |
+| appservice_webapp_settings_get-appsettings | List the application settings for web app <webapp> in resource group <resource_group> | none |
+| appservice_webapp_settings_get-appsettings | Get the application settings for web app <webapp> in resource group <resource_group> | none |
+| appservice_webapp_settings_update-appsettings | Add application setting <setting-name> with <setting-value> to web app <webapp> in resource group <resource_group> | none |
+| appservice_webapp_settings_update-appsettings | Set application setting <setting-name> with <setting-value> to web app <webapp> in resource group <resource_group> | none |
+| appservice_webapp_settings_update-appsettings | Delete application setting <setting-name> from web app <webapp> in resource group <resource_group> | none |
 
 ## Azure Application Insights
 
@@ -225,8 +263,17 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 |:----------|:------------|:------------|
 | azurebackup_backup_status | Check backup status for resource <resource_id> in location <location> | investigation-required |
 | azurebackup_backup_status | What is the backup status of <resource_id> in location <location> in my subscription? | investigation-required |
-| azurebackup_disasterrecovery_enable-crr | Enable cross-region restore on vault <vault_name> in resource group <resource_group> | investigation-required |
-| azurebackup_disasterrecovery_enable-crr | Turn on cross-region restore for vault <vault_name> under resource group <resource_group> | investigation-required |
+| azurebackup_container_get | Look up storage account <storage_account_name> in RSV vault <vault_name> in resource group <resource_group> | investigation-required |
+| azurebackup_container_get | Is container <container_name> registered in vault <vault_name> under resource group <resource_group>? | investigation-required |
+| azurebackup_container_get | Get the RSV protection container details for storage account <storage_account_name> in vault <vault_name> in resource group <resource_group> | investigation-required |
+| azurebackup_container_refresh | Refresh backup containers on vault <vault_name> in resource group <resource_group> to discover new Azure File share storage accounts | investigation-required |
+| azurebackup_container_refresh | Trigger container discovery on Recovery Services vault <vault_name> under resource group <resource_group> so the vault picks up newly authorized storage accounts | investigation-required |
+| azurebackup_container_refresh | Kick off backup container refresh on vault <vault_name> in resource group <resource_group> before registering my storage account for Azure Files backup | investigation-required |
+| azurebackup_container_refresh | Refresh Azure VM backup containers on Recovery Services vault <vault_name> in resource group <resource_group> | investigation-required |
+| azurebackup_container_register | Register storage account <storage_account> with Recovery Services vault <vault_name> in resource group <resource_group> as an Azure File share backup container | investigation-required |
+| azurebackup_container_register | Onboard my storage account <storage_account> for Azure Files backup on vault <vault_name> under resource group <resource_group> without acquiring a storage account lock | investigation-required |
+| azurebackup_disasterrecovery_enable-crr | Enable cross-region restore on GRS-enabled Recovery Services vault <vault_name> in resource group <resource_group> with vault-type rsv | investigation-required |
+| azurebackup_disasterrecovery_enable-crr | Turn on cross-region restore for GRS-enabled DPP backup vault <vault_name> under resource group <resource_group> with vault-type dpp | investigation-required |
 | azurebackup_governance_find-unprotected | Find unprotected resources of type <resource_type> in my subscription | investigation-required |
 | azurebackup_governance_find-unprotected | Show me Azure resources that are not backed up for resource type <resource_type> | investigation-required |
 | azurebackup_governance_find-unprotected | Find unprotected SQL databases and file shares discovered by backup vaults in my subscription | investigation-required |
@@ -243,7 +290,7 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | azurebackup_policy_create | Set up a new backup policy called <policy_name> for AzureFileShare workload in vault <vault_name> under resource group <resource_group> | investigation-required |
 | azurebackup_policy_create | Create an Enhanced VM backup policy <policy_name> with hourly schedule every 4 hours starting 08:00 for 12 hours in vault <vault_name> under resource group <resource_group> | investigation-required |
 | azurebackup_policy_create | Create a weekly VM policy <policy_name> on Mondays at 03:00 with 8 weekly, 12 monthly, 5 yearly retention and archive after 90 days in vault <vault_name> under resource group <resource_group> | investigation-required |
-| azurebackup_policy_create | Create a SQL backup policy <policy_name> with daily full at 02:00, differential on Wednesdays, and 60-minute log frequency in vault <vault_name> under resource group <resource_group> | investigation-required |
+| azurebackup_policy_create | Create a SQL backup policy <policy_name> with weekly full on Sundays at 02:00, differential on Wednesdays, and 60-minute log frequency in vault <vault_name> under resource group <resource_group> | investigation-required |
 | azurebackup_policy_create | Create an Azure Disk backup policy <policy_name> with daily, weekly, and monthly retention tiers and vault tier copy enabled in vault <vault_name> under resource group <resource_group> | investigation-required |
 | azurebackup_policy_update | Update backup policy <policy_name> in vault <vault_name> in resource group <resource_group> to change the schedule time to 04:00 | investigation-required |
 | azurebackup_policy_update | Modify the daily retention to 60 days for backup policy <policy_name> in vault <vault_name> under resource group <resource_group> | investigation-required |
@@ -252,13 +299,19 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | azurebackup_policy_update | Add a yearly retention of 5 years on the first Sunday of January to backup policy <policy_name> in vault <vault_name> under resource group <resource_group> | investigation-required |
 | azurebackup_policy_get | Get backup policy <policy_name> from vault <vault_name> in resource group <resource_group> | investigation-required |
 | azurebackup_policy_get | Show me the details of backup policy <policy_name> in vault <vault_name> under resource group <resource_group> | investigation-required |
+| azurebackup_policy_get | Show the full schedule, retention, and tiering details for backup policy <policy_name> in vault <vault_name> under resource group <resource_group> | investigation-required |
+| azurebackup_protectableitem_inquire | Inquire the registered storage account <storage_account> on vault <vault_name> in resource group <resource_group> to discover Azure File shares available for backup | investigation-required |
+| azurebackup_protectableitem_inquire | Discover file shares in backup container <container_name> on Recovery Services vault <vault_name> under resource group <resource_group> | investigation-required |
 | azurebackup_protectableitem_list | List protectable items in vault <vault_name> in resource group <resource_group> | investigation-required |
 | azurebackup_protectableitem_list | Show me all items that can be backed up in vault <vault_name> under resource group <resource_group> | investigation-required |
+| azurebackup_container_list-available | List storage accounts available for registration as Azure File share backup containers in vault <vault_name> and resource group <resource_group> | investigation-required |
+| azurebackup_container_list-available | Show available Azure File share backup containers for Recovery Services vault <vault_name> | investigation-required |
 | azurebackup_protecteditem_get | Get protected item details for <item_name> in vault <vault_name> and resource group <resource_group> | investigation-required |
 | azurebackup_protecteditem_get | Show backup status of protected item <item_name> in vault <vault_name> under resource group <resource_group> | investigation-required |
 | azurebackup_protecteditem_get | Show the current workload-specific inclusion or exclusion settings and all protected-item properties for <item_name> in vault <vault_name> and resource group <resource_group> | investigation-required |
 | azurebackup_protecteditem_protect | Enable backup protection for <item_name> using policy <policy_name> in vault <vault_name> and resource group <resource_group> | investigation-required |
 | azurebackup_protecteditem_protect | Start protecting my Azure VM by enabling backup on <item_name> in vault <vault_name> under resource group <resource_group> | investigation-required |
+| azurebackup_protecteditem_protect | Protect AKS cluster <cluster_id> with policy <policy_name> in vault <vault_name> and resource group <resource_group>, including cluster-scoped resources | investigation-required |
 | azurebackup_protecteditem_protect | Protect VM <item_name> in vault <vault_name> under resource group <resource_group> using policy <policy_name> and back up only data disks with LUNs 0,1 | investigation-required |
 | azurebackup_protecteditem_protect | Enable selective disk backup on VM <item_name> in vault <vault_name> under resource group <resource_group> excluding all attached data disks so only the OS disk is protected | investigation-required |
 | azurebackup_protecteditem_update-protection | Change the backup policy attached to VM <item_name> in vault <vault_name> under resource group <resource_group> to <policy_name> | investigation-required |
@@ -272,20 +325,20 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | azurebackup_resourceguard_create | Set up a new MUA Resource Guard called <resource_guard> in <location> under resource group <resource_group> excluding operations deleteProtection,updatePolicy | investigation-required |
 | azurebackup_resourceguard_create | Create Resource Guard <resource_guard> in <location> under resource group <resource_group> with tags env=prod,team=backup | investigation-required |
 | azurebackup_resourceguard_delete | Delete Resource Guard <resource_guard> from resource group <resource_group> | investigation-required |
-| azurebackup_resourceguard_delete | Remove the Resource Guard <resource_guard> in <resource_group> | investigation-required |
+| azurebackup_resourceguard_delete | Remove the Resource Guard <resource_guard> in resource group <resource_group> | investigation-required |
 | azurebackup_resourceguard_delete | Delete the MUA Resource Guard <resource_guard> from resource group <resource_group> | investigation-required |
 | azurebackup_resourceguard_get | Get Resource Guard <resource_guard> in resource group <resource_group> | investigation-required |
 | azurebackup_resourceguard_get | List all Resource Guards in resource group <resource_group> | investigation-required |
 | azurebackup_resourceguard_get | Show me every MUA Resource Guard in my subscription | investigation-required |
 | azurebackup_security_configure-encryption | Configure customer-managed key encryption on vault <vault_name> in resource group <resource_group> using key <key_name> from key vault <key_vault_uri> with system-assigned identity | investigation-required |
 | azurebackup_security_configure-encryption | Enable CMK encryption on vault <vault_name> using user-assigned identity <identity_id> and key <key_name> from <key_vault_uri> | investigation-required |
-| azurebackup_security_configure-encryption | Set up customer-managed encryption for backup vault <vault_name> in <resource_group> | investigation-required |
+| azurebackup_security_configure-encryption | Set up customer-managed encryption for backup vault <vault_name> in resource group <resource_group> | investigation-required |
 | azurebackup_security_enable-mua | Enable multi-user authorization on vault <vault_name> in resource group <resource_group> with resource guard <resource_guard_id> | investigation-required |
-| azurebackup_security_enable-mua | Link Resource Guard <resource_guard_id> to backup vault <vault_name> in <resource_group> to enable MUA | investigation-required |
-| azurebackup_security_enable-mua | Turn on MUA for DPP backup vault <vault_name> in <resource_group> using Resource Guard <resource_guard_id> | investigation-required |
+| azurebackup_security_enable-mua | Link Resource Guard <resource_guard_id> to backup vault <vault_name> in resource group <resource_group> to enable MUA | investigation-required |
+| azurebackup_security_enable-mua | Turn on MUA for DPP backup vault <vault_name> in resource group <resource_group> using Resource Guard <resource_guard_id> | investigation-required |
 | azurebackup_security_disable-mua | Disable multi-user authorization on vault <vault_name> in resource group <resource_group> | investigation-required |
-| azurebackup_security_disable-mua | Turn off MUA on backup vault <vault_name> in <resource_group> | investigation-required |
-| azurebackup_security_disable-mua | Unlink the Resource Guard from vault <vault_name> in <resource_group> and disable MUA | investigation-required |
+| azurebackup_security_disable-mua | Turn off MUA on backup vault <vault_name> in resource group <resource_group> | investigation-required |
+| azurebackup_security_disable-mua | Unlink the Resource Guard from vault <vault_name> in resource group <resource_group> and disable MUA | investigation-required |
 | azurebackup_vault_create | Create a Recovery Services vault named <vault_name> in resource group <resource_group> in region <location> with vault-type 'rsv' | investigation-required |
 | azurebackup_vault_create | Set up a new backup vault called <vault_name> in <location> under resource group <resource_group> with vault-type 'dpp' | investigation-required |
 | azurebackup_vault_get | Get details of Recovery Services vault <vault_name> in resource group <resource_group> | investigation-required |
@@ -296,18 +349,21 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | azurebackup_vault_get | Get vault <vault_name> in resource group <resource_group> and include all extended posture fields | investigation-required |
 | azurebackup_vault_update | Update Azure Backup vault <vault_name> in resource group <resource_group> to enable soft delete | investigation-required |
 | azurebackup_vault_update | Change the identity type of Azure Backup vault <vault_name> in resource group <resource_group> to SystemAssigned | investigation-required |
+| azurebackup_vault_update | Attach user-assigned managed identity <identity_id> to Recovery Services vault <vault_name> in resource group <resource_group> by setting identity type to UserAssigned | investigation-required |
+| azurebackup_vault_update | Disable public network access on Recovery Services vault <vault_name> in resource group <resource_group> | investigation-required |
 | azurebackup_vault_privateendpoint_create | Create a Private Endpoint named <pe_name> on Recovery Services vault <vault_name> in resource group <resource_group> using subnet <subnet_id> and auto-approve it | investigation-required |
-| azurebackup_vault_privateendpoint_create | Provision a Private Endpoint <pe_name> for vault <vault_name> in <resource_group> connected to subnet <subnet_id> with group-id AzureBackup | investigation-required |
-| azurebackup_vault_privateendpoint_create | Set up private connectivity for Recovery Services vault <vault_name> in <resource_group> by creating Private Endpoint <pe_name> in subnet <subnet_id> | investigation-required |
+| azurebackup_vault_privateendpoint_create | Provision a Private Endpoint <pe_name> for vault <vault_name> in resource group <resource_group> connected to subnet <subnet_id> with group-id AzureBackup | investigation-required |
+| azurebackup_vault_privateendpoint_create | Set up private connectivity for Recovery Services vault <vault_name> in resource group <resource_group> by creating Private Endpoint <pe_name> in subnet <subnet_id> | investigation-required |
+| azurebackup_vault_privateendpoint_create | Create Private Endpoint <pe_name> for vault <vault_name> in resource group <resource_group> in subnet <subnet_id> and link it to private DNS zone <dns_zone_id> | investigation-required |
 | azurebackup_vault_privateendpoint_get | List all Private Endpoint Connections on Recovery Services vault <vault_name> in resource group <resource_group> | investigation-required |
 | azurebackup_vault_privateendpoint_get | Get Private Endpoint Connection <pe_name> on vault <vault_name> in resource group <resource_group> | investigation-required |
-| azurebackup_vault_privateendpoint_get | Show me the Private Endpoints attached to Recovery Services vault <vault_name> in <resource_group> | investigation-required |
+| azurebackup_vault_privateendpoint_get | Show me the Private Endpoints attached to Recovery Services vault <vault_name> in resource group <resource_group> | investigation-required |
 | azurebackup_vault_privateendpoint_delete | Delete Private Endpoint Connection <pe_name> from Recovery Services vault <vault_name> in resource group <resource_group> | investigation-required |
-| azurebackup_vault_privateendpoint_delete | Remove the vault-side private endpoint connection <pe_name> on vault <vault_name> in <resource_group> | investigation-required |
-| azurebackup_vault_privateendpoint_delete | Detach Private Endpoint <pe_name> from Recovery Services vault <vault_name> in <resource_group> | investigation-required |
+| azurebackup_vault_privateendpoint_delete | Remove the vault-side private endpoint connection <pe_name> on vault <vault_name> in resource group <resource_group> | investigation-required |
+| azurebackup_vault_privateendpoint_delete | Detach Private Endpoint <pe_name> from Recovery Services vault <vault_name> in resource group <resource_group> | investigation-required |
 | azurebackup_vault_privateendpoint_approve-reject | Approve pending Private Endpoint Connection <pe_name> on Recovery Services vault <vault_name> in resource group <resource_group> with action approve | investigation-required |
 | azurebackup_vault_privateendpoint_approve-reject | Reject Private Endpoint Connection <pe_name> on Recovery Services vault <vault_name> in resource group <resource_group> with action reject and description "Not authorized" | investigation-required |
-| azurebackup_vault_privateendpoint_approve-reject | Respond to the pending private link connection <pe_name> on Recovery Services vault <vault_name> in <resource_group> by approving it | investigation-required |
+| azurebackup_vault_privateendpoint_approve-reject | Respond to the pending private link connection <pe_name> on Recovery Services vault <vault_name> in resource group <resource_group> by approving it | investigation-required |
 
 ## Azure CLI
 
@@ -316,7 +372,6 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | extension_cli_generate | What's the Azure CLI command for getting a storage account's details? | none |
 | extension_cli_generate | List all virtual machines in my subscription using Azure CLI | none |
 | extension_cli_generate | Show me the details of the storage account <account_name> using Azure CLI commands | none |
-| extension_cli_install | \<Ask the MCP host to uninstall az cli on your machine and run test prompts for extension_cli_generate> | context-required |
 | extension_cli_install | How to install azd | none |
 | extension_cli_install | What is Azure Functions Core tools and how to install it | none |
 
@@ -353,7 +408,6 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | communication_email_send | Send email with CC to <email-address-1> and <email-address-2> | clarification-required |
 | communication_email_send | Send email to multiple recipients: <email-address-1>, <email-address-2> | clarification-required |
 | communication_email_send | Send email with reply-to address set to <email-address> | clarification-required |
-| communication_email_send | Send email with custom sender name <sender-name> | clarification-required |
 | communication_email_send | Send an email with BCC recipients | clarification-required |
 | communication_sms_send | Send an SMS message to <phone-number> saying "Hello" | clarification-required |
 | communication_sms_send | Send SMS to <phone-number-2> from <phone-number-1> with message "Test message" | clarification-required |
@@ -636,6 +690,7 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | fileshares_fileshare_create | Create file share <file_share_name> in resource group <resource_group_name> with 100 GB storage | none |
 | fileshares_fileshare_create | Create a file share named <file_share_name> in location <location> with resource group <resource_group_name> | none |
 | fileshares_fileshare_create | Set up a new file share <file_share_name> in resource group <resource_group_name> | none |
+| fileshares_fileshare_create | Create an NFS file share <file_share_name> in location <location> in resource group <resource_group_name> with NFS encryption in transit enabled | none |
 | fileshares_fileshare_delete | Delete the file share <file_share_name> from resource group <resource_group_name> | none |
 | fileshares_fileshare_delete | Remove file share <file_share_name> in resource group <resource_group_name> | none |
 | fileshares_fileshare_get | List all file shares in my subscription | none |
@@ -649,9 +704,9 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | fileshares_fileshare_check-name-availability | Check if file share name <file_share_name> is available in <location> in subscription <subscription> | none |
 | fileshares_fileshare_check-name-availability | Is the file share name <file_share_name> available in <location>? | none |
 | fileshares_fileshare_check-name-availability | Verify availability of file share name <file_share_name> in <location> | none |
-| fileshares_rec | Get Azure Files provisioning recommendations for file share <file_share_name> in resource group <resource_group_name> | investigation-required |
-| fileshares_rec | Show me provisioning recommendations for file share <file_share_name> | none |
-| fileshares_rec | Get the Azure Files recommended provisioning settings for file share <file_share_name> | investigation-required |
+| fileshares_rec | Get Azure Files provisioning recommendations for <provisioned_storage_in_gib> GiB in location <location> in subscription <subscription> | none |
+| fileshares_rec | Show me provisioning recommendations for <provisioned_storage_in_gib> GiB of Azure File Shares storage in location <location> | none |
+| fileshares_rec | Get the recommended Azure File Shares provisioning settings for <provisioned_storage_in_gib> GiB in location <location> | none |
 | fileshares_fileshare_snapshot_create | Create a snapshot of file share <file_share_name> in resource group <resource_group_name> | none |
 | fileshares_fileshare_snapshot_create | Create a snapshot for file share <file_share_name> in resource group <resource_group_name> | none |
 | fileshares_fileshare_snapshot_create | Take a snapshot of file share <file_share_name> | none |
@@ -672,10 +727,12 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | fileshares_fileshare_peconnection_update | Change the status of private endpoint connection <connection_name> to Rejected | clarification-required |
 | fileshares_fileshare_update | Update file share <file_share_name> in resource group <resource_group_name> | none |
 | fileshares_fileshare_update | Update the provisioned storage for file share <file_share_name> to 200 GB | none |
+| fileshares_fileshare_update | Enable NFS encryption in transit for file share <file_share_name> in resource group <resource_group_name> | none |
+| fileshares_fileshare_update | Disable NFS encryption in transit on file share <file_share_name> in resource group <resource_group_name> | none |
 | fileshares_fileshare_update | Modify file share <file_share_name> in resource group <resource_group_name> with new settings | clarification-required |
-| fileshares_usage | Get Azure Files usage data for file share <file_share_name> in resource group <resource_group_name> | none |
-| fileshares_usage | Show me the usage statistics for file share <file_share_name> | none |
-| fileshares_usage | Get the current Azure Files usage for file share <file_share_name> | none |
+| fileshares_usage | Get Azure Files usage data for subscription <subscription> in location <location> | none |
+| fileshares_usage | Show me Azure File Shares usage statistics in location <location> | none |
+| fileshares_usage | Get the current Azure File Shares usage in location <location> for subscription <subscription> | none |
 
 ## Azure Function App
 
@@ -704,11 +761,13 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | functions_project_get | Set up a new Azure Functions project in Python | none |
 | functions_project_get | Generate the project files for a TypeScript Azure Functions app | none |
 | functions_project_get | Use an Azure Functions project template to create boilerplate for a Java app using JDK 21 | none |
+| functions_project_get | Set up a new Azure Functions project in Go | none |
 | functions_template_get | Get the available triggers and bindings for C# Azure Functions. | none |
 | functions_template_get | Show me all the Python Azure Function templates | none |
 | functions_template_get | Create a Timer trigger function in C# that runs every 5 minutes | none |
 | functions_template_get | Show me a Cosmos DB trigger with an output binding in Java | none |
 | functions_template_get | Generate a MCP Tool trigger in TypeScript for Node.js 22 | none |
+| functions_template_get | Show me all the Go Azure Function templates | none |
 
 ## Azure Insights
 
@@ -743,6 +802,15 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | iothub_query_run | Query all devices in IoT Hub <hub_name> in resource group <resource_group_name> | none |
 | iothub_query_run | Find devices in IoT Hub <hub_name> where reported batteryLevel is less than 20 | none |
 | iothub_query_run | Find devices in IoT Hub <hub_name> where tag environment equals 'production' | none |
+
+## Azure IoT Operations
+
+| Tool Name | Test Prompt |
+|:----------|:----------|
+| iotoperations_instance_get | Get details for Azure IoT Operations instance <instance_name> in resource group <resource_group_name> |
+| iotoperations_instance_get | Show the Azure IoT Operations instance <instance_name> in resource group <resource_group_name> |
+| iotoperations_instance_list | List all Azure IoT Operations instances in my subscription |
+| iotoperations_instance_list | What Azure IoT Operations instances do I have in resource group <resource_group_name>? |
 
 ## Azure Key Vault
 
@@ -970,8 +1038,10 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | monitor_table_list | Show me the tables in the Log Analytics workspace <workspace_name> | none |
 | monitor_table_type_list | List all available table types in the Log Analytics workspace <workspace_name> | none |
 | monitor_table_type_list | Show me the available table types in the Log Analytics workspace <workspace_name> | none |
-| monitor_webtests_createorupdate | Create a new Standard Web Test with name <webtest_resource_name> in my subscription in <resource_group> in a given <appinsights_component> | none |
-| monitor_webtests_createorupdate | Update an existing Standard Web Test with name <webtest_resource_name> in my subscription in <resource_group> in a given <appinsights_component> | none |
+| monitor_webtests_createorupdate | Create a new Standard Web Test with name <webtest_resource_name> in my subscription in resource group <resource_group> in a given <appinsights_component> | none |
+| monitor_webtests_createorupdate | Update an existing Standard Web Test with name <webtest_resource_name> in my subscription in resource group <resource_group> in a given <appinsights_component> | none |
+| monitor_webtests_get | Get details for the web test named <webtest_resource_name> in resource group <resource_group> | none |
+| monitor_webtests_get | List all web tests in my subscription | none |
 | monitor_workspace_list | List all Log Analytics workspaces in my subscription | none |
 | monitor_workspace_list | Show me my Log Analytics workspaces | none |
 | monitor_workspace_list | Show me the Log Analytics workspaces in my subscription | none |
@@ -1008,6 +1078,8 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 |:----------|:------------|:------------|
 | role_assignment_list | List all available role assignments in my subscription | none |
 | role_assignment_list | Show me the available role assignments in my subscription | none |
+| role_assignment_list | List the role assignments at scope /providers/Microsoft.Management/managementGroups/<management-group> | none |
+| role_assignment_list | List the role assignments at scope /subscriptions/<subscription>/resourceGroups/<resource-group> | none |
 
 ## Azure Redis
 
@@ -1027,119 +1099,119 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 
 | Tool Name | Test Prompt | Interaction |
 |:----------|:----------|:----------|
-| resilience_drill_create | Create a zonal resilience drill named <drill_name> in service group <service_group> using subscription <subscription>, region <region>, resource group <resource_group>, automated built-in roles, and recovery plan <recovery_plan_name> | none |
-| resilience_drill_create | Create a regional resilience drill named <drill_name> in service group <service_group> using subscription <subscription>, region <region>, and manual RBAC setup | none |
-| resilience_drill_create | Create a resilience drill for service group <service_group> | clarification-required |
-| resilience_drill_delete | Delete resilience drill <drill_name> from service group <service_group> | none |
-| resilience_drill_delete | Permanently remove drill <drill_name> in service group <service_group> | none |
-| resilience_drill_end | End resilience drill <drill_name> in service group <service_group> with a Success attestation and notes "Validation completed" | none |
-| resilience_drill_end | Stop the running resilience drill <drill_name> in service group <service_group> and attest it as Failed with notes "Validation failed" | none |
-| resilience_drill_get | List all resilience drills in service group <service_group> | none |
-| resilience_drill_get | Get the details of resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_update | Update resilience drill <drill_name> in service group <service_group> to use manual RBAC setup | none |
-| resilience_drill_update | Associate recovery plan <recovery_plan_name> with resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_update | Move the supporting resources of resilience drill <drill_name> in service group <service_group> to subscription <subscription> and region <region> | none |
-| resilience_drill_resource_get | List all drill resources for resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_resource_get | List all drill targets for resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_resource_get | Show the resources targeted by resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_resource_get | Get the complete details of drill resource <resource_name> for resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_resource_get | Get drill target <resource_name> for resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_resource_get | Retrieve the ARM properties of drill resource <resource_name> for resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_check-resync-readiness | Check whether resilience drill <drill_name> in service group <service_group> is ready to resync | none |
-| resilience_drill_check-resync-readiness | Run a resync readiness check for resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_validate-for-execution | Validate resilience drill <drill_name> in service group <service_group> for execution from source location <source_location> | none |
-| resilience_drill_validate-for-execution | Preflight resilience drill <drill_name> in service group <service_group> to confirm it is ready to run from source locations <source_locations> | none |
-| resilience_drill_resource_add-or-update | Add resource <resource_id> to resilience drill <drill_name> in service group <service_group> with a fault duration of <fault_duration_minutes> minutes | none |
-| resilience_drill_resource_add-or-update | Update or exclude the resources of resilience drill <drill_name> in service group <service_group> | none |
-| resilience_drill_start | Start resilience drill <drill_name> in service group <service_group> in Failover mode | none |
-| resilience_drill_start | Run resilience drill <drill_name> in service group <service_group> as a TestFailover | none |
-| resilience_drill_run_get | List all runs of drill <drill_name> in service group <service_group> | none |
-| resilience_drill_run_get | Get drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
-| resilience_drill_run_add-notes | Add the note <notes> to drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
-| resilience_drill_run_failover | Start failover for drill run <drill_run_name> of drill <drill_name> in service group <service_group>, using source location <source_location> | none |
-| resilience_drill_run_failover | Fail over selected resources <resource_ids> in drill run <drill_run_name> from physical zones <source_locations>, and automatically continue after fault injection | none |
-| resilience_drill_run_resume | Resume paused drill run <drill_run_name> for drill <drill_name> in service group <service_group> and proceed from fault injection to failover | none |
-| resilience_drill_run_mark-complete | Mark the FaultInjection stage of drill run <drill_run_name> for drill <drill_name> in service group <service_group> as complete | none |
-| resilience_drill_run_mark-complete | Complete the fault injection stage of drill run <drill_run_name> for drill <drill_name> in service group <service_group> so the drill run can proceed | none |
-| resilience_drill_run_reprotect | Reprotect failed-over resources in drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
-| resilience_drill_run_resource_get | List all resources of drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
-| resilience_drill_run_resource_get | Get resource <resource_name> from drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
-| resilience_goal_assignment_get | List all resilience goal assignments in service group <service_group> | none |
-| resilience_goal_assignment_get | Get the details of goal assignment <goal_assignment_name> in service group <service_group> | none |
-| resilience_goal_resource_get | List all resources (members) of goal assignment <goal_assignment_name> in service group <service_group> | none |
-| resilience_goal_resource_get | Get the goal resource <resource_name> for goal assignment <goal_assignment_name> in service group <service_group> | none |
-| resilience_goal_template_get | List all resilience goal templates in service group <service_group> | none |
-| resilience_goal_template_get | Get the details of goal template <goal_template_name> in service group <service_group> | none |
-| resilience_recoveryjob_get | List all recovery jobs of recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryjob_get | Get the details of recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryjob_resource_get | List all resources (targets) of recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryjob_resource_get | Get the recovery job resource <resource_name> for recovery job <recovery_job_name> of recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryjob_resume | Resume paused recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> with description <description> | none |
-| resilience_recoveryjob_resume | Continue paused recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryjob_retry | Retry failed recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryjob_retry | Rerun failed recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryplan_create | Create a Zonal recoveryplan named <recoveryplan_name> in service group <service_group> | clarification-required |
-| resilience_recoveryplan_create | Set up a Zonal recoveryplan named <recoveryplan_name> in service group <service_group>. Use a system-assigned managed identity, description <plan_description>, and default recovery group description <default_group_description> | none |
-| resilience_recoveryplan_create | Create Zonal recoveryplan <recoveryplan_name> in service group <service_group> and attach user-assigned managed identity <user_assigned_identity_resource_id>. Use <plan_description> for the plan description and <default_group_description> for the default recovery group | none |
-| resilience_recoveryplan_create | Change recoveryplan <recoveryplan_name> in service group <service_group> to a system-assigned managed identity and description <plan_description>. Keep its Zonal plan type and existing recovery groups | none |
-| resilience_recoveryplan_create | Split recoveryplan <recoveryplan_name> in service group <service_group> into its default recovery group and one additional group described as <additional_group_description>. Preserve its existing plan type and managed identity | none |
-| resilience_recoveryplan_create | Update recoveryplan <recoveryplan_name> in service group <service_group>. Add a manual pre-action named <manual_action_name> with timeout <timeout_minutes> to the default group, and add a post-action script using Automation runbook <runbook_resource_id> to additional recovery group <recovery_group_id>. Preserve its existing plan type and managed identity | none |
-| resilience_recoveryplan_create | Add a pre-action to the default group of recoveryplan <recoveryplan_name> in service group <service_group>. I have not chosen the action values yet. Explain the accepted values and ask me for the action type, name, optional description, timeout, and any runbook-specific values one at a time before updating the plan. Preserve its existing plan type and managed identity | none |
-| resilience_recoveryplan_create | Change a system-assigned recoveryplan <recoveryplan_name> in service group <service_group> to use a user-assigned managed identity | clarification-required |
-| resilience_recoveryplan_create | Update recoveryplan <recoveryplan_name> in service group <service_group> to use both its system-assigned identity and user-assigned managed identity <user_assigned_identity_resource_id>. Preserve its existing plan settings | none |
-| resilience_recoveryplan_checkreadiness | Check whether recoveryplan <recoveryplan_name> and its protected resources are ready for recovery operations in service group <service_group> | none |
-| resilience_recoveryplan_checkreadiness | Discover readiness issues for the resources in recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryplan_delete | Delete the entire recoveryplan <recoveryplan_name> from service group <service_group> | none |
-| resilience_recoveryplan_delete | Recoveryplan <recoveryplan_name> is no longer needed. Delete it from resilience service group <service_group> | none |
-| resilience_recoveryplan_failover | Fail over qualified resources in recoveryplan <recoveryplan_name> from source location <source_location> in service group <service_group> | none |
-| resilience_recoveryplan_failover | Fail over recoveryplan <recoveryplan_name> in service group <service_group> without specifying source locations or recovery resources | clarification-required |
-| resilience_recoveryplan_finalize | Complete or finalize the current recoveryplan operation for recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryplan_finalize | Finish finalizing recoveryplan <recoveryplan_name> in service group <service_group> and return the operation ID | none |
-| resilience_recoveryplan_get | List all resilience recovery plans in service group <service_group> | none |
-| resilience_recoveryplan_get | Get the details of recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryplan_reprotect | Reprotect all qualified resources after failover in recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryplan_reprotect | Start reprotection after failover for selected recovery resources in recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryplan_validateforfailover | Validate recoveryplan <recoveryplan_name> for failover in service group <service_group>, but I have not specified a source location or selected recovery-resource ID | clarification-required |
-| resilience_recoveryplan_validateforfailover | Validate which resources in recoveryplan <recoveryplan_name> in service group <service_group> can fail over from <source_location> and report blocking reasons | none |
-| resilience_recoveryplan_validateforfailover | Check whether recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> is qualified for failover without requiring a source location or executing failover | none |
-| resilience_recoveryplan_validateforfailover | Validate recoveryplan <recoveryplan_name> for failover from <source_location>, supply required user consent, and return per-resource qualification results without updating resources | none |
-| resilience_recoveryplan_validateforreprotect | Validate all qualified resources in recoveryplan <recoveryplan_name> in service group <service_group> for reprotect after failover and report blocking reasons | none |
-| resilience_recoveryplan_validateforreprotect | Check whether recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> is qualified for reprotect without executing reprotect or updating resources | none |
-| resilience_recoveryplan_validateforoperation | Validate the Failover operation for recoveryplan <recoveryplan_name> in service group <service_group> before execution, including whether the plan's current state allows it | none |
-| resilience_recoveryplan_validateforoperation | Run operation-specific pre-validation for TestFailoverCleanup on recoveryplan <recoveryplan_name>; check plan support, current state, readiness status, and permissions without executing it | none |
-| resilience_recoveryplan_validateforoperation | Run operation-specific pre-validation for recoveryplan <recoveryplan_name> in service group <service_group>, but ask me which supported operation to validate before proceeding | clarification-required |
-| resilience_recoveryplan_validateforoperation | Validate an operation on recoveryplan <recoveryplan_name> in service group <service_group> | clarification-required |
-| resilience_recoveryplan_validateforoperation | We were discussing failover earlier. Now validate an operation on recoveryplan <recoveryplan_name> in service group <service_group>, but do not assume which operation I mean | clarification-required |
-| resilience_recoveryplan_validateforoperation | Check whether recoveryplan <recoveryplan_name> can perform my intended recovery operation in service group <service_group>; ask me to choose Failover, FailoverCommit, Reprotect, TestFailover, or TestFailoverCleanup | clarification-required |
-| resilience_recoveryplan_resource_update | Include and configure recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> in service group <service_group> with selected protection solution type <protection_solution_type> and settings <protection_settings_json> | none |
-| resilience_recoveryplan_resource_update | Add recovery resource <recovery_resource_id> to recoveryplan <recoveryplan_name> in service group <service_group>. Protect it with CustomRunbook using failover runbook <failover_runbook_resource_id> and reprotect runbook <reprotect_runbook_resource_id> | none |
-| resilience_recoveryplan_resource_update | Include virtual machine recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> in service group <service_group> using AzureSiteRecovery protection settings <protection_settings_json> with disk reprotection, staging storage, and a test failover virtual network | none |
-| resilience_recoveryplan_resource_update | Include recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> in service group <service_group>, but I have not chosen CustomRunbook or AzureSiteRecovery protection settings | clarification-required |
-| resilience_recoveryplan_resource_update | Keep recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> in service group <service_group>, but exclude it from recovery operations | none |
-| resilience_recoveryplan_resource_update | Update recoveryplan <recoveryplan_name> in service group <service_group> by removing recovery resource <recovery_resource_id> from its resource membership while retaining the recoveryplan and its other recovery resources | none |
-| resilience_recoveryplan_resource_get | List all resources (members) of recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_recoveryplan_resource_get | Get the recovery resource <resource_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
-| resilience_usageplan_create | Create a resilience usage plan <usage_plan_name> with plan type Basic in resource group <resource_group_name> | none |
-| resilience_usageplan_create | Set up a Basic resilience usage plan named <usage_plan_name> in resource group <resource_group_name> | none |
-| resilience_usageplan_create | Update resilience usage plan <usage_plan_name> in resource group <resource_group_name> to use the Basic plan type | none |
-| resilience_usageplan_delete | Delete resilience usage plan <usage_plan_name> from resource group <resource_group_name> | none |
-| resilience_usageplan_delete | Permanently remove the usage plan named <usage_plan_name> in resource group <resource_group_name> | none |
-| resilience_usageplan_delete | Remove the usage plan of service group <service_group> | clarification-required |
-| resilience_usageplan_delete | Remove usage plan <usage_plan_name> entirely, not just one service group enrollment, from resource group <resource_group_name> | none |
-| resilience_usageplan_delete | Delete usage plan <usage_plan_name> from resource group <resource_group_name>. If dependent enrollments block deletion, list their exact names and ask for explicit confirmation before deleting any enrollment; do not remove them automatically | none |
-| resilience_usageplan_delete | Retry deleting usage plan <usage_plan_name> from resource group <resource_group_name> only after every separately confirmed dependent enrollment deletion succeeds; stop and report any enrollment cleanup failure | none |
-| resilience_usageplan_enrollment_create | Create a usage plan enrollment <enrollment_name> for usage plan <usage_plan_name> associated with service group <service_group> in resource group <resource_group_name> | none |
-| resilience_usageplan_enrollment_create | Enroll service group <service_group> in usage plan <usage_plan_name> as <enrollment_name> in resource group <resource_group_name> | none |
-| resilience_usageplan_enrollment_create | Update enrollment <enrollment_name> under usage plan <usage_plan_name> to use service group <service_group> in resource group <resource_group_name> | none |
-| resilience_usageplan_enrollment_delete | Delete enrollment <enrollment_name> from usage plan <usage_plan_name> in resource group <resource_group_name> | none |
-| resilience_usageplan_enrollment_delete | Remove the service group association named <enrollment_name> from resilience usage plan <usage_plan_name> in resource group <resource_group_name> | none |
-| resilience_usageplan_enrollment_delete | Unenroll service group <service_group> from usage plan <usage_plan_name>, but keep the usage plan itself | clarification-required |
-| resilience_usageplan_enrollment_delete | Remove only enrollment <enrollment_name> from usage plan <usage_plan_name>; do not delete the parent plan | none |
-| resilience_usageplan_enrollment_get | List all enrollments of usage plan <usage_plan_name> in resource group <resource_group_name> | none |
-| resilience_usageplan_enrollment_get | Get the details of usage plan enrollment <enrollment_name> for usage plan <usage_plan_name> in resource group <resource_group_name> | none |
-| resilience_usageplan_get | List all resilience usage plans in my subscription | none |
-| resilience_usageplan_get | List all resilience usage plans in resource group <resource_group_name> | none |
-| resilience_usageplan_get | Get the details of usage plan <usage_plan_name> in resource group <resource_group_name> | none |
+| resiliency_drill_create | Create a zonal resilience drill named <drill_name> in service group <service_group> using subscription <subscription>, region <region>, resource group <resource_group>, automated built-in roles, and recovery plan <recovery_plan_name> | none |
+| resiliency_drill_create | Create a regional resilience drill named <drill_name> in service group <service_group> using subscription <subscription>, region <region>, and manual RBAC setup | none |
+| resiliency_drill_create | Create a resilience drill for service group <service_group> | clarification-required |
+| resiliency_drill_delete | Delete resilience drill <drill_name> from service group <service_group> | none |
+| resiliency_drill_delete | Permanently remove drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_end | End resilience drill <drill_name> in service group <service_group> with a Success attestation and notes "Validation completed" | none |
+| resiliency_drill_end | Stop the running resilience drill <drill_name> in service group <service_group> and attest it as Failed with notes "Validation failed" | none |
+| resiliency_drill_get | List all resilience drills in service group <service_group> | none |
+| resiliency_drill_get | Get the details of resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_update | Update resilience drill <drill_name> in service group <service_group> to use manual RBAC setup | none |
+| resiliency_drill_update | Associate recovery plan <recovery_plan_name> with resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_update | Move the supporting resources of resilience drill <drill_name> in service group <service_group> to subscription <subscription> and region <region> | none |
+| resiliency_drill_resource_get | List all drill resources for resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_resource_get | List all drill targets for resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_resource_get | Show the resources targeted by resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_resource_get | Get the complete details of drill resource <resource_name> for resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_resource_get | Get drill target <resource_name> for resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_resource_get | Retrieve the ARM properties of drill resource <resource_name> for resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_check-resync-readiness | Check whether resilience drill <drill_name> in service group <service_group> is ready to resync | none |
+| resiliency_drill_check-resync-readiness | Run a resync readiness check for resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_validate-for-execution | Validate resilience drill <drill_name> in service group <service_group> for execution from source location <source_location> | none |
+| resiliency_drill_validate-for-execution | Preflight resilience drill <drill_name> in service group <service_group> to confirm it is ready to run from source locations <source_locations> | none |
+| resiliency_drill_resource_add-or-update | Add resource <resource_id> to resilience drill <drill_name> in service group <service_group> with a fault duration of <fault_duration_minutes> minutes | none |
+| resiliency_drill_resource_add-or-update | Update or exclude the resources of resilience drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_start | Start resilience drill <drill_name> in service group <service_group> in Failover mode | none |
+| resiliency_drill_start | Run resilience drill <drill_name> in service group <service_group> as a TestFailover | none |
+| resiliency_drill_run_get | List all runs of drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_run_get | Get drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_run_add-notes | Add the note <notes> to drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_run_failover | Start failover for drill run <drill_run_name> of drill <drill_name> in service group <service_group>, using source location <source_location> | none |
+| resiliency_drill_run_failover | Fail over selected resources <resource_ids> in drill run <drill_run_name> from physical zones <source_locations>, and automatically continue after fault injection | none |
+| resiliency_drill_run_resume | Resume paused drill run <drill_run_name> for drill <drill_name> in service group <service_group> and proceed from fault injection to failover | none |
+| resiliency_drill_run_mark-complete | Mark the FaultInjection stage of drill run <drill_run_name> for drill <drill_name> in service group <service_group> as complete | none |
+| resiliency_drill_run_mark-complete | Complete the fault injection stage of drill run <drill_run_name> for drill <drill_name> in service group <service_group> so the drill run can proceed | none |
+| resiliency_drill_run_reprotect | Reprotect failed-over resources in drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_run_resource_get | List all resources of drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
+| resiliency_drill_run_resource_get | Get resource <resource_name> from drill run <drill_run_name> for drill <drill_name> in service group <service_group> | none |
+| resiliency_goal_assignment_get | List all resilience goal assignments in service group <service_group> | none |
+| resiliency_goal_assignment_get | Get the details of goal assignment <goal_assignment_name> in service group <service_group> | none |
+| resiliency_goal_resource_get | List all resources (members) of goal assignment <goal_assignment_name> in service group <service_group> | none |
+| resiliency_goal_resource_get | Get the goal resource <resource_name> for goal assignment <goal_assignment_name> in service group <service_group> | none |
+| resiliency_goal_template_get | List all resilience goal templates in service group <service_group> | none |
+| resiliency_goal_template_get | Get the details of goal template <goal_template_name> in service group <service_group> | none |
+| resiliency_recoveryjob_get | List all recovery jobs of recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryjob_get | Get the details of recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryjob_resource_get | List all resources (targets) of recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryjob_resource_get | Get the recovery job resource <resource_name> for recovery job <recovery_job_name> of recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryjob_resume | Resume paused recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> with description <description> | none |
+| resiliency_recoveryjob_resume | Continue paused recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryjob_retry | Retry failed recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryjob_retry | Rerun failed recovery job <recovery_job_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryplan_create | Create a Zonal recoveryplan named <recoveryplan_name> in service group <service_group> | clarification-required |
+| resiliency_recoveryplan_create | Set up a Zonal recoveryplan named <recoveryplan_name> in service group <service_group>. Use a system-assigned managed identity, description <plan_description>, and default recovery group description <default_group_description> | none |
+| resiliency_recoveryplan_create | Create Zonal recoveryplan <recoveryplan_name> in service group <service_group> and attach user-assigned managed identity <user_assigned_identity_resource_id>. Use <plan_description> for the plan description and <default_group_description> for the default recovery group | none |
+| resiliency_recoveryplan_create | Change recoveryplan <recoveryplan_name> in service group <service_group> to a system-assigned managed identity and description <plan_description>. Keep its Zonal plan type and existing recovery groups | none |
+| resiliency_recoveryplan_create | Create Zonal recoveryplan <recoveryplan_name> in service group <service_group> with a system-assigned managed identity, plan description <plan_description>, default recovery group description <default_group_description>, and one additional recovery group described as <additional_group_description> | none |
+| resiliency_recoveryplan_create | Create Zonal recoveryplan <recoveryplan_name> in service group <service_group> with a system-assigned managed identity and plan description <plan_description>. Add manual pre-action <manual_action_name> with timeout <timeout_minutes> to the default group, and add CustomRunbook post-action <runbook_action_name> with timeout <runbook_timeout_minutes> using Automation runbook <runbook_resource_id> to an additional group described as <additional_group_description> | none |
+| resiliency_recoveryplan_create | Create Zonal recoveryplan <recoveryplan_name> in service group <service_group> with a system-assigned managed identity, plan description <plan_description>, and default group description <default_group_description>. Add a ManualAction pre-action named <manual_action_name>, description <manual_action_description>, and timeout <timeout_minutes> to the default group | none |
+| resiliency_recoveryplan_create | Change a system-assigned recoveryplan <recoveryplan_name> in service group <service_group> to use a user-assigned managed identity | clarification-required |
+| resiliency_recoveryplan_create | Update recoveryplan <recoveryplan_name> in service group <service_group> to use both its system-assigned identity and user-assigned managed identity <user_assigned_identity_resource_id>. Preserve its existing plan settings | none |
+| resiliency_recoveryplan_checkreadiness | Check whether recoveryplan <recoveryplan_name> and its protected resources are ready for recovery operations in service group <service_group> | none |
+| resiliency_recoveryplan_checkreadiness | Discover readiness issues for the resources in recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryplan_delete | Delete the entire recoveryplan <recoveryplan_name> from service group <service_group> | none |
+| resiliency_recoveryplan_delete | Recoveryplan <recoveryplan_name> is no longer needed. Delete it from resilience service group <service_group> | none |
+| resiliency_recoveryplan_failover | Fail over qualified resources in recoveryplan <recoveryplan_name> from source location <source_location> in service group <service_group> | none |
+| resiliency_recoveryplan_failover | Fail over recoveryplan <recoveryplan_name> in service group <service_group> without specifying source locations or recovery resources | clarification-required |
+| resiliency_recoveryplan_finalize | Complete or finalize the current recoveryplan operation for recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryplan_finalize | Finish finalizing recoveryplan <recoveryplan_name> in service group <service_group> and return the operation ID | none |
+| resiliency_recoveryplan_get | List all resilience recovery plans in service group <service_group> | none |
+| resiliency_recoveryplan_get | Get the details of recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryplan_reprotect | Reprotect all qualified resources after failover in recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryplan_reprotect | Start reprotection after failover for selected recovery resources in recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryplan_validateforfailover | Validate recoveryplan <recoveryplan_name> for failover in service group <service_group>, but I have not specified a source location or selected recovery-resource ID | clarification-required |
+| resiliency_recoveryplan_validateforfailover | Validate which resources in recoveryplan <recoveryplan_name> in service group <service_group> can fail over from <source_location> and report blocking reasons | none |
+| resiliency_recoveryplan_validateforfailover | Check whether recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> is qualified for failover without requiring a source location or executing failover | none |
+| resiliency_recoveryplan_validateforfailover | Validate recoveryplan <recoveryplan_name> for failover from <source_location>, supply required user consent, and return per-resource qualification results without updating resources | none |
+| resiliency_recoveryplan_validateforreprotect | Validate all qualified resources in recoveryplan <recoveryplan_name> in service group <service_group> for reprotect after failover and report blocking reasons | none |
+| resiliency_recoveryplan_validateforreprotect | Check whether recovery resource <recovery_resource_id> in Azure Resilience Management recoveryplan <recoveryplan_name> in service group <service_group> is qualified for reprotect without executing reprotect or updating resources | none |
+| resiliency_recoveryplan_validateforoperation | Run operation-level pre-validation for Failover on Azure Resilience Management recoveryplan <recoveryplan_name> in service group <service_group>; check whether the plan's current state, readiness, and permissions support the operation, not per-resource failover qualification | none |
+| resiliency_recoveryplan_validateforoperation | Run operation-level pre-validation for TestFailoverCleanup on Azure Resilience Management recoveryplan <recoveryplan_name> in service group <service_group>; check plan support, current state, readiness, and permissions without executing it | none |
+| resiliency_recoveryplan_validateforoperation | Run operation-specific pre-validation for recoveryplan <recoveryplan_name> in service group <service_group>, but ask me which supported operation to validate before proceeding | clarification-required |
+| resiliency_recoveryplan_validateforoperation | Validate an operation on recoveryplan <recoveryplan_name> in service group <service_group> | clarification-required |
+| resiliency_recoveryplan_validateforoperation | We were discussing failover earlier. Now validate an operation on recoveryplan <recoveryplan_name> in service group <service_group>, but do not assume which operation I mean | clarification-required |
+| resiliency_recoveryplan_validateforoperation | Check whether recoveryplan <recoveryplan_name> can perform my intended recovery operation in service group <service_group>; ask me to choose Failover, FailoverCommit, Reprotect, TestFailover, or TestFailoverCleanup | clarification-required |
+| resiliency_recoveryplan_resource_update | Include and configure recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> in service group <service_group> with selected protection solution type <protection_solution_type> and settings <protection_settings_json> | none |
+| resiliency_recoveryplan_resource_update | Add recovery resource <recovery_resource_id> to recoveryplan <recoveryplan_name> in service group <service_group>. Protect it with CustomRunbook using failover runbook <failover_runbook_resource_id> and reprotect runbook <reprotect_runbook_resource_id> | none |
+| resiliency_recoveryplan_resource_update | Include virtual machine recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> in service group <service_group> using AzureSiteRecovery protection settings <protection_settings_json> with disk reprotection, staging storage, and a test failover virtual network | none |
+| resiliency_recoveryplan_resource_update | Include recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> in service group <service_group>, but I have not chosen CustomRunbook or AzureSiteRecovery protection settings | clarification-required |
+| resiliency_recoveryplan_resource_update | Keep recovery resource <recovery_resource_id> in recoveryplan <recoveryplan_name> in service group <service_group>, but exclude it from recovery operations | none |
+| resiliency_recoveryplan_resource_update | Update recoveryplan <recoveryplan_name> in service group <service_group> by removing recovery resource <recovery_resource_id> from its resource membership while retaining the recoveryplan and its other recovery resources | none |
+| resiliency_recoveryplan_resource_get | List all resources (members) of recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_recoveryplan_resource_get | Get the recovery resource <resource_name> for recoveryplan <recoveryplan_name> in service group <service_group> | none |
+| resiliency_usageplan_create | Create a resilience usage plan <usage_plan_name> with plan type Basic in resource group <resource_group_name> | none |
+| resiliency_usageplan_create | Set up a Basic resilience usage plan named <usage_plan_name> in resource group <resource_group_name> | none |
+| resiliency_usageplan_create | Update resilience usage plan <usage_plan_name> in resource group <resource_group_name> to use the Basic plan type | none |
+| resiliency_usageplan_delete | Delete resilience usage plan <usage_plan_name> from resource group <resource_group_name> | none |
+| resiliency_usageplan_delete | Permanently remove the usage plan named <usage_plan_name> in resource group <resource_group_name> | none |
+| resiliency_usageplan_delete | Remove the usage plan of service group <service_group> | clarification-required |
+| resiliency_usageplan_delete | Remove usage plan <usage_plan_name> entirely, not just one service group enrollment, from resource group <resource_group_name> | none |
+| resiliency_usageplan_delete | Delete usage plan <usage_plan_name> from resource group <resource_group_name>. If dependent enrollments block deletion, list their exact names and ask for explicit confirmation before deleting any enrollment; do not remove them automatically | none |
+| resiliency_usageplan_delete | Retry deleting usage plan <usage_plan_name> from resource group <resource_group_name> only after every separately confirmed dependent enrollment deletion succeeds; stop and report any enrollment cleanup failure | none |
+| resiliency_usageplan_enrollment_create | Create a usage plan enrollment <enrollment_name> for usage plan <usage_plan_name> associated with service group <service_group> in resource group <resource_group_name> | none |
+| resiliency_usageplan_enrollment_create | Enroll service group <service_group> in usage plan <usage_plan_name> as <enrollment_name> in resource group <resource_group_name> | none |
+| resiliency_usageplan_enrollment_create | Update enrollment <enrollment_name> under usage plan <usage_plan_name> to use service group <service_group> in resource group <resource_group_name> | none |
+| resiliency_usageplan_enrollment_delete | Delete enrollment <enrollment_name> from usage plan <usage_plan_name> in resource group <resource_group_name> | none |
+| resiliency_usageplan_enrollment_delete | Remove the service group association named <enrollment_name> from resilience usage plan <usage_plan_name> in resource group <resource_group_name> | none |
+| resiliency_usageplan_enrollment_delete | Unenroll service group <service_group> from usage plan <usage_plan_name>, but keep the usage plan itself | clarification-required |
+| resiliency_usageplan_enrollment_delete | Remove only enrollment <enrollment_name> from usage plan <usage_plan_name>; do not delete the parent plan | none |
+| resiliency_usageplan_enrollment_get | List all Azure Resilience Management enrollments of usage plan <usage_plan_name> in resource group <resource_group_name> | none |
+| resiliency_usageplan_enrollment_get | Get the details of Azure Resilience Management enrollment <enrollment_name> for usage plan <usage_plan_name> in resource group <resource_group_name> | none |
+| resiliency_usageplan_get | List all resilience usage plans in my subscription | none |
+| resiliency_usageplan_get | List all resilience usage plans in resource group <resource_group_name> | none |
+| resiliency_usageplan_get | Get the details of Azure Resilience Management usage plan <usage_plan_name> in resource group <resource_group_name> | none |
 
 ## Azure Resource Group
 
@@ -1379,6 +1451,7 @@ The `Interaction` column describes whether a prompt can invoke its tool immediat
 | storagesync_cloudendpoint_delete | Delete the cloud endpoint <endpoint-name> from sync group <syncgroup-name> | clarification-required |
 | storagesync_cloudendpoint_get | Get the details of cloud endpoint <endpoint-name> in sync group <syncgroup-name> | none |
 | storagesync_cloudendpoint_get | List all cloud endpoints in sync group <syncgroup-name> | none |
+| storagesync_cloudendpoint_update | Update cloud endpoint <endpoint-name> in sync group <syncgroup-name> to enumerate Azure file share changes every 7 days | none |
 | storagesync_serverendpoint_create | Create a new server endpoint on server <server-name> pointing to local path <local-path> in sync group <syncgroup-name> | none |
 | storagesync_serverendpoint_delete | Delete the server endpoint <endpoint-name> from sync group <syncgroup-name> | none |
 | storagesync_serverendpoint_get | Get the details of server endpoint <endpoint-name> in sync group <syncgroup-name> | none |

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using Azure;
 using Azure.Core;
 using Azure.Mcp.Tools.Adme.Services;
 using Azure.Mcp.Tools.Adme.Tests.TestSupport;
@@ -26,9 +27,7 @@ public sealed class HealthServiceTests
             TestConstants.Tenant,
             TestContext.Current.CancellationToken);
 
-        Assert.True(result.AuthOk);
-        Assert.True(result.ConnectivityOk);
-        Assert.Equal(200, result.ConnectivityStatusCode);
+        Assert.Equal(200, result.Result.StatusCode);
         Assert.Equal("/api/storage/v2/info", handler.LastRequest!.RequestUri!.AbsolutePath);
         Assert.Equal("Bearer", handler.LastRequest.Headers.Authorization!.Scheme);
         Assert.Equal(TestConstants.AccessToken, handler.LastRequest.Headers.Authorization.Parameter);
@@ -37,7 +36,7 @@ public sealed class HealthServiceTests
     }
 
     [Fact]
-    public async Task CheckHealthAsync_WhenAuthenticationFails_DoesNotCallAdme()
+    public async Task CheckHealthAsync_WhenAuthenticationFails_ThrowsAndDoesNotCallAdme()
     {
         var provider = Substitute.For<IAzureTokenCredentialProvider>();
         provider.GetTokenCredentialAsync(Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -46,39 +45,63 @@ public sealed class HealthServiceTests
             throw new InvalidOperationException("ADME should not be called when auth fails"));
         var service = new HealthService(provider, new FakeHttpClientFactory(handler));
 
-        var result = await service.CheckHealthAsync(
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.CheckHealthAsync(
             TestConstants.Endpoint,
             TestConstants.DataPartition,
             null,
-            TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken));
 
-        Assert.False(result.AuthOk);
-        Assert.Equal(
-            "Microsoft Entra authentication failed. Verify your credentials and sign-in configuration.",
-            result.AuthError);
-        Assert.DoesNotContain("no credential available", result.AuthError);
-        Assert.False(result.ConnectivityOk);
-        Assert.Equal("Connectivity check skipped because authentication failed.", result.ConnectivityError);
-        Assert.Null(result.ConnectivityStatusCode);
         Assert.Null(handler.LastRequest);
     }
 
     [Fact]
-    public async Task CheckHealthAsync_WhenEndpointIsUnavailable_ReportsConnectivityFailure()
+    public async Task CheckHealthAsync_WhenEndpointReturnsFailure_ThrowsAdmeError()
     {
-        var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+        const string errorResponse = "Storage service unavailable.";
+        var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+        {
+            Content = new StringContent(errorResponse)
+        });
         var service = new HealthService(CreateCredentialProvider(), new FakeHttpClientFactory(handler));
 
-        var result = await service.CheckHealthAsync(
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => service.CheckHealthAsync(
             TestConstants.Endpoint,
             TestConstants.DataPartition,
             null,
-            TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken));
 
-        Assert.True(result.AuthOk);
-        Assert.False(result.ConnectivityOk);
-        Assert.Equal(503, result.ConnectivityStatusCode);
-        Assert.Contains("503", result.ConnectivityError);
+        Assert.Equal(503, exception.Status);
+        Assert.Contains(errorResponse, exception.Message);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, "ADME authentication failed: invalid token.")]
+    [InlineData(HttpStatusCode.Forbidden, "ADME authorization failed: access denied.")]
+    public async Task CheckHealthAsync_WhenAdmeRejectsAuthentication_ReportsAuthFailure(
+        HttpStatusCode statusCode,
+        string expectedError)
+    {
+        const string correlationId = "health-correlation-id";
+        var handler = new StubHttpMessageHandler(_ =>
+        {
+            var response = new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(expectedError)
+            };
+            response.Headers.Add(AdmeServiceHelper.CorrelationIdHeader, correlationId);
+            return response;
+        });
+        var service = new HealthService(CreateCredentialProvider(), new FakeHttpClientFactory(handler));
+
+        var exception = await Assert.ThrowsAsync<RequestFailedException>(() => service.CheckHealthAsync(
+            TestConstants.Endpoint,
+            TestConstants.DataPartition,
+            null,
+            TestContext.Current.CancellationToken));
+
+        Assert.Equal((int)statusCode, exception.Status);
+        Assert.Contains(expectedError, exception.Message);
+        Assert.Contains(correlationId, exception.Message);
     }
 
     [Theory]
